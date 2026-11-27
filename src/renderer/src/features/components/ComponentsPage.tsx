@@ -130,10 +130,10 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
               setPage(1)
             }}
             placeholder={`搜索${meta.specLabel}、${meta.makerLabel}或存放位置`}
-            className="field pl-8 pr-8"
+            className="field pl-8 pr-[54px]"
           />
-          <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-hair px-1 text-[10.5px] text-t3">
-            /
+          <kbd className="kbd pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+            Ctrl F
           </kbd>
         </div>
 

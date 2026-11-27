@@ -8,14 +8,17 @@ import type { ViewKey } from '@renderer/components/Sidebar'
 export function PageHeader({
   title,
   meta,
-  action
+  action,
+  centered
 }: {
   title: string
   meta?: string
   action?: React.ReactNode
+  /** 设置、关于这类单栏内容页用居中布局，与页面主体同宽 */
+  centered?: boolean
 }) {
   return (
-    <div className="flex items-start px-7 pt-6">
+    <div className={`flex items-start ${centered ? 'mx-auto w-full max-w-[880px] px-7 pt-6' : 'px-7 pt-6'}`}>
       <div>
         <h1 className="text-[20px] font-medium leading-[1.3] tracking-[-0.2px] text-t1">{title}</h1>
         {meta ? <p className="mt-1.5 text-[12px] text-t2">{meta}</p> : null}
@@ -129,9 +132,15 @@ export function OverviewPage({ onNavigate }: { onNavigate: (view: ViewKey) => vo
       </div>
 
       <div className="px-7 pb-8">
-        <p className="text-[11.5px] text-t3">
-          提示：按 <kbd className="rounded border border-hair px-1">/</kbd> 或{' '}
-          <kbd className="rounded border border-hair px-1">Ctrl K</kbd> 可以直接搜索物料。
+        <p className="flex flex-wrap items-center gap-1.5 text-[12px] text-t3">
+          <span className="flex items-center gap-1">
+            <kbd className="kbd">Ctrl</kbd>
+            <span>+</span>
+            <kbd className="kbd">F</kbd>
+          </span>
+          <span className="ml-1 text-t2">快速搜索物料</span>
+          <span>·</span>
+          <span>不在物料页时会自动跳转过去</span>
         </p>
       </div>
     </div>

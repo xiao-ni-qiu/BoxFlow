@@ -91,9 +91,9 @@ export function SettingsPage() {
 
   return (
     <div className="h-full overflow-auto">
-      <PageHeader title="设置" meta="所有数据都保存在本机，不上传任何服务器" />
+      <PageHeader title="设置" meta="所有数据都保存在本机，不上传任何服务器" centered />
 
-      <div className="grid max-w-3xl gap-3 px-7 pb-10 pt-5">
+      <div className="mx-auto grid w-full max-w-[880px] gap-3 px-7 pb-10 pt-5">
         <Card title="数据存储" description="数据库与附件都在这个目录里，整个目录拷走就是完整备份">
           <div
             className="flex items-center gap-2 pb-3"

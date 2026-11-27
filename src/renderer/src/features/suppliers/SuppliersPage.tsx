@@ -166,8 +166,11 @@ export function SuppliersPage() {
               setPage(1)
             }}
             placeholder="搜索供应商名称、联系人或电话"
-            className="field pl-8"
+            className="field pl-8 pr-[54px]"
           />
+          <kbd className="kbd pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+            Ctrl F
+          </kbd>
         </div>
       </div>
 

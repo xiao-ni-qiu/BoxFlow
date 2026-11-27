@@ -93,9 +93,9 @@ export function AboutPage() {
 
   return (
     <div className="h-full overflow-auto">
-      <PageHeader title="关于" meta={`BoxFlow ${version} · Apache-2.0 开源`} />
+      <PageHeader title="关于" meta={`BoxFlow ${version} · Apache-2.0 开源`} centered />
 
-      <div className="grid max-w-3xl gap-3 px-7 pb-10 pt-5">
+      <div className="mx-auto grid w-full max-w-[880px] gap-3 px-7 pb-10 pt-5">
         <section className="flex items-center gap-4 rounded-card border border-hair px-5 py-4">
           <img src={logo} alt="BoxFlow" className="h-14 w-14 shrink-0 rounded-[14px]" />
           <div className="min-w-0">

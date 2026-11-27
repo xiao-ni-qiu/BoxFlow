@@ -220,6 +220,25 @@
   .row-hover:hover {
     background: var(--bg-app);
   }
+
+  /* 键帽：搜索框内与页面提示共用，深浅色主题都清晰可辨 */
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 19px;
+    padding: 0 5px;
+    border: 1px solid var(--hair-strong);
+    border-radius: 4px;
+    background: var(--bg-surface);
+    box-shadow: 0 1px 0 var(--hair-strong);
+    color: var(--text-2);
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+  }
 }
 
 @keyframes fade-up {

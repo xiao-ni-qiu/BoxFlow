@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ItemKind } from '@shared/constants'
+import { isSearchHotkey, requestSearchFocus } from '@renderer/lib/hooks'
 import { Sidebar, type ViewKey } from './components/Sidebar'
 import { TitleBar } from './components/TitleBar'
 import { OverviewPage } from './features/overview/OverviewPage'
@@ -57,6 +58,19 @@ export function App() {
   }, [queryClient])
 
   const kind = KIND_VIEWS[view]
+
+  // 有搜索框的页面自己会处理 Ctrl+F；其它页面（概览、流水、设置…）统一跳到物料页再落焦
+  const hasSearchBox = Boolean(kind) || view === 'suppliers'
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (hasSearchBox || !isSearchHotkey(event)) return
+      event.preventDefault()
+      requestSearchFocus()
+      setView('components')
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [hasSearchBox])
 
   return (
     <div className="flex h-full flex-col">
