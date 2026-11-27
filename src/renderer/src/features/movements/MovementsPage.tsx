@@ -8,8 +8,8 @@ import { Button, EmptyState, Select } from '@renderer/components/ui'
 import { PageHeader } from '@renderer/features/overview/OverviewPage'
 import { ExportMenu } from '@renderer/features/transfer/ExportMenu'
 
-const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface py-2 text-left text-[12px] font-normal text-t3'
-const TD = 'whitespace-nowrap pr-3'
+const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface px-2 py-2 text-left text-[12px] font-normal text-t3'
+const TD = 'whitespace-nowrap px-2'
 
 function sourceLabel(operator: string): string {
   if (operator === 'local') return '界面'
@@ -87,10 +87,10 @@ export function MovementsPage() {
                 <th className={TH}>时间</th>
                 <th className={TH}>类型</th>
                 <th className={TH}>型号</th>
-                <th className={clsx(TH, 'pr-3 text-right')}>变动</th>
-                <th className={clsx(TH, 'pr-3 text-right')}>结存</th>
+                <th className={clsx(TH, 'text-right')}>变动</th>
+                <th className={clsx(TH, 'text-right')}>结存</th>
                 <th className={TH}>来源</th>
-                <th className={clsx(TH, 'pr-0')}>备注</th>
+                <th className={TH}>备注</th>
               </tr>
             </thead>
             <tbody>
@@ -133,7 +133,7 @@ export function MovementsPage() {
                     <td className={clsx(TD, 'truncate text-[12px] text-t2')}>
                       {sourceLabel(item.operator)}
                     </td>
-                    <td className="truncate text-[12px] text-t3">
+                    <td className={clsx(TD, 'truncate text-[12px] text-t3')}>
                       {item.note || item.projectRef || '—'}
                     </td>
                   </tr>

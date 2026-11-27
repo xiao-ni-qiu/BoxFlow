@@ -23,8 +23,8 @@ const SORTS: { key: SortKey; label: string }[] = [
 ]
 
 const TH =
-  'sticky top-0 z-[2] whitespace-nowrap bg-surface py-2.5 text-left text-[11px] font-normal tracking-[0.02em] text-t3'
-const TD = 'whitespace-nowrap pr-3'
+  'sticky top-0 z-[2] whitespace-nowrap bg-surface px-2 py-2.5 text-center text-[11px] font-normal tracking-[0.02em] text-t3'
+const TD = 'whitespace-nowrap px-2 text-center'
 
 export function ComponentsPage({ kind }: { kind: ItemKind }) {
   const meta = KIND_META[kind]
@@ -259,11 +259,9 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                 ? Array.from({ length: 8 }).map((_, index) => (
                     <tr key={index} style={{ height: 48, borderBottom: '1px solid var(--hair)' }}>
                       {Array.from({ length: 7 }).map((__, cell) => (
-                        <td key={cell} className={clsx('pr-3 text-center')}>
+                        <td key={cell} className="px-2 text-center">
                           {cell === 0 || cell === 1 || cell === 3 || cell === 5 ? (
-                            <span
-                              className={clsx('block h-2.5 w-3/4 rounded bg-sunken', 'mx-auto')}
-                            />
+                            <span className="mx-auto block h-2.5 w-3/4 rounded bg-sunken" />
                           ) : null}
                         </td>
                       ))}
@@ -295,24 +293,26 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                         </td>
                         <td className={clsx(TD, 'mono text-center text-t2')}>{dash(item.package)}</td>
                         <td
-                          className={clsx(TD, 'num text-center text-[13px]')}
+                          className={clsx(TD, 'num text-[13px]')}
                           style={{ color: low ? 'var(--warn)' : 'var(--text-1)' }}
                         >
-                          {low ? (
-                            <span
-                              className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle"
-                              style={{ background: 'var(--warn)' }}
-                            />
-                          ) : null}
-                          {formatNumber(item.quantity)}
+                          <span className="inline-flex items-center justify-center gap-1.5">
+                            {low ? (
+                              <span
+                                className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                                style={{ background: 'var(--warn)' }}
+                              />
+                            ) : null}
+                            {formatNumber(item.quantity)}
+                          </span>
                         </td>
-                        <td className={clsx(TD, 'text-center text-t2')}>{dash(item.locationFullCode)}</td>
-                        <td className="relative py-0 pl-0 pr-0 text-center">
+                        <td className={clsx(TD, 'text-t2')}>{dash(item.locationFullCode)}</td>
+                        <td className="relative py-0">
                           <span className="text-[11.5px] text-t3 transition-opacity duration-fast group-hover:opacity-0">
                             {formatDateTime(item.updatedAt).slice(5, 10)}
                           </span>
                           <span
-                            className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
+                            className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
                             style={{ background: 'var(--bg-surface)', borderColor: 'var(--hair)' }}
                           >
                             <IconButton

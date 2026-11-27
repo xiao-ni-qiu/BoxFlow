@@ -20,8 +20,8 @@ import { PageHeader } from '@renderer/features/overview/OverviewPage'
 import { ExportMenu } from '@renderer/features/transfer/ExportMenu'
 import { ImportWizard } from '@renderer/features/transfer/ImportWizard'
 
-const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface py-2 text-left text-[12px] font-normal text-t3'
-const TD = 'whitespace-nowrap pr-3'
+const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface px-2 py-2 text-left text-[12px] font-normal text-t3'
+const TD = 'whitespace-nowrap px-2'
 
 interface FormState {
   name: string
@@ -190,9 +190,9 @@ export function SuppliersPage() {
                 <th className={TH}>名称</th>
                 <th className={TH}>联系人</th>
                 <th className={TH}>电话</th>
-                <th className={clsx(TH, 'pr-3 text-right')}>供货物料</th>
-                <th className={clsx(TH, 'pr-3 text-right')}>库存合计</th>
-                <th className={clsx(TH, 'pr-0 text-right')}>评级</th>
+                <th className={clsx(TH, 'text-right')}>供货物料</th>
+                <th className={clsx(TH, 'text-right')}>库存合计</th>
+                <th className={clsx(TH, 'text-right')}>评级</th>
               </tr>
             </thead>
             <tbody>
@@ -200,7 +200,7 @@ export function SuppliersPage() {
                 Array.from({ length: 6 }).map((_, index) => (
                   <tr key={index} style={{ height: 56, borderBottom: '1px solid var(--hair)' }}>
                     {Array.from({ length: 6 }).map((__, cell) => (
-                      <td key={cell} className="pr-3">
+                      <td key={cell} className="px-2">
                         {cell === 0 ? <span className="block h-2.5 w-40 rounded bg-sunken" /> : null}
                       </td>
                     ))}
@@ -235,7 +235,7 @@ export function SuppliersPage() {
                     <td className={clsx(TD, 'num text-right text-[13px] text-t2')}>
                       {formatNumber(item.totalQuantity ?? 0)}
                     </td>
-                    <td className="num text-right text-[12.5px] text-t2">L{item.level}</td>
+                    <td className={clsx(TD, 'num text-right text-[12.5px] text-t2')}>L{item.level}</td>
                   </tr>
                 ))
               )}
