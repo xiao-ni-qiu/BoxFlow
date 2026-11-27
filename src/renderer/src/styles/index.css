@@ -141,7 +141,8 @@
     outline: none;
     transition:
       border-color 140ms ease-out,
-      background-color 140ms ease-out;
+      background-color 140ms ease-out,
+      box-shadow 140ms ease-out;
   }
 
   .field:hover {
@@ -152,6 +153,13 @@
   .field:focus {
     background-color: var(--bg-surface);
     border-color: var(--accent);
+  }
+
+  /* 自绘下拉展开时：边框提亮 + 一圈柔光环，明确当前焦点 */
+  .field.is-open {
+    background-color: var(--bg-surface);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
   /* 关掉原生下拉箭头，只保留自己画的那一个 */

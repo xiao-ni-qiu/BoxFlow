@@ -84,6 +84,16 @@ npm run dist
 
 产物在 `dist/BoxFlow-<版本号>-x64.exe`。改动涉及打包配置（`electron-builder.yml`）时，请务必装一次安装包再跑一遍主流程——开发模式正常不代表打包后正常（历史上有过 asar 完整性校验导致打包版静默退出的问题）。
 
+> **国内网络打包**：electron-builder 会从 GitHub 下载 Electron 运行时与 NSIS 等构建依赖，直连容易卡在 `Timeout awaiting 'request'`。改用镜像即可：
+>
+> ```bash
+> ELECTRON_MIRROR=https://cdn.npmmirror.com/binaries/electron/ \
+> ELECTRON_BUILDER_BINARIES_MIRROR=https://cdn.npmmirror.com/binaries/electron-builder-binaries/ \
+> npx electron-builder --win --x64
+> ```
+>
+> 构建依赖下载过一次后会进本机缓存，之后不再联网。
+
 ## 文档与截图
 
 README 里的截图来自应用内置的截图模式：

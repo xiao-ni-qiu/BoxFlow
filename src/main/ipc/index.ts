@@ -1,4 +1,4 @@
-import { ipcMain, dialog, shell, BrowserWindow } from 'electron'
+import { ipcMain, dialog, shell, BrowserWindow, app } from 'electron'
 import { cpSync, existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
@@ -7,11 +7,12 @@ import { componentsService } from '../modules/components/service'
 import { suppliersService } from '../modules/suppliers/service'
 import { movementsService } from '../modules/movements/service'
 import { locationsService } from '../modules/locations/service'
-import { serializeError } from '../errors'
-import { backupDatabase, closeDatabase, getDataDir, initDatabase, getDb } from '../db'
+import { AppError, serializeError } from '../errors'
+import { backupDatabase, closeDatabase, databaseSize, getDataDir, initDatabase, getDb } from '../db'
 import { loadSettings, saveSettings } from '../settings'
-import { assertSettingsPatch } from './validate'
+import { assertSettingsPatch, assertWebdavPatch } from './validate'
 import { mcpStatus, restartMcp } from '../mcp'
+import * as webdav from '../modules/backup/service'
 import { randomBytes } from 'node:crypto'
 import {
   exportEntity,
@@ -167,6 +168,54 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
       db.exec('DELETE FROM suppliers; DELETE FROM storage_locations;')
     })
     run()
+    return true
+  })
+
+  handle(IPC.webdavStatus, () => webdav.status())
+  handle(IPC.webdavSave, (p) => webdav.save(assertWebdavPatch(asObject(p))))
+  handle(IPC.webdavTest, () => webdav.test())
+  handle(IPC.webdavBackup, () => webdav.backupNow())
+  handle(IPC.webdavList, () => webdav.listRemote())
+  handle(IPC.webdavRestore, (p) => webdav.restore(String(asObject(p).name ?? '')))
+
+  handle(IPC.appInfo, () => {
+    const db = getDb()
+    const countOf = (table: string): number => {
+      try {
+        const row = db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get() as { n?: number } | undefined
+        return Number(row?.n ?? 0)
+      } catch {
+        return 0
+      }
+    }
+    return {
+      name: 'BoxFlow',
+      version: app.getVersion(),
+      electron: process.versions.electron,
+      chrome: process.versions.chrome,
+      node: process.versions.node,
+      v8: process.versions.v8,
+      platform: `${process.platform} ${process.arch}`,
+      packaged: app.isPackaged,
+      dataDir: getDataDir(),
+      userData: app.getPath('userData'),
+      dbBytes: databaseSize(),
+      counts: {
+        components: countOf('components'),
+        suppliers: countOf('suppliers'),
+        movements: countOf('stock_movements'),
+        locations: countOf('storage_locations')
+      }
+    }
+  })
+
+  handle(IPC.appOpenExternal, async (p) => {
+    const url = String(asObject(p).url ?? '')
+    // 只放行项目自己的两个站点，避免 IPC 变成任意 URL 打开器
+    if (!/^https:\/\/(github\.com|www\.jianguoyun\.com)\//i.test(url)) {
+      throw new AppError('VALIDATION_FAILED', '不允许打开该地址')
+    }
+    await shell.openExternal(url)
     return true
   })
 

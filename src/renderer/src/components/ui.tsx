@@ -1,14 +1,21 @@
 import {
+  Children,
+  Fragment,
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
-  type ReactNode
+  type ReactNode,
+  type RefObject
 } from 'react'
+import { createPortal } from 'react-dom'
 import clsx from 'clsx'
-import { X } from 'lucide-react'
+import { Check, ChevronDown, Plus, X } from 'lucide-react'
 
 export function Button({
   children,
@@ -57,8 +64,478 @@ export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
   return <textarea {...props} className={clsx('field resize-none', props.className)} />
 }
 
-export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={clsx('field cursor-pointer', props.className)} />
+/* ---------------------------------- 下拉 ---------------------------------- */
+/* 原生 <select> 的展开面板由操作系统绘制，无法跟随主题配色，因此在渲染层自绘。 */
+
+export interface DropdownOption {
+  value: string
+  label: string
+  disabled?: boolean
+}
+
+export interface ComboboxOption {
+  value: string
+  label: string
+  hint?: string
+}
+
+/** 保持与原生 select 相同的取值方式：onChange(e => e.target.value) */
+type DropdownChangeEvent = {
+  target: { value: string }
+  currentTarget: { value: string }
+}
+
+interface PopoverPos {
+  left: number
+  width: number
+  top?: number
+  bottom?: number
+  maxH: number
+}
+
+const PANEL_CLASS =
+  'fixed z-[70] overflow-auto rounded-[10px] border border-hair bg-surface p-1 shadow-[0_18px_44px_-18px_rgba(20,20,19,0.32),0_2px_6px_-2px_rgba(20,20,19,0.1)]'
+
+function collectOptions(children: ReactNode): DropdownOption[] {
+  const out: DropdownOption[] = []
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) return
+    if (child.type === Fragment) {
+      out.push(...collectOptions((child.props as { children?: ReactNode }).children))
+      return
+    }
+    if (child.type !== 'option') return
+    const props = child.props as {
+      value?: string | number
+      children?: ReactNode
+      disabled?: boolean
+    }
+    const text = Children.toArray(props.children)
+      .filter((part): part is string | number => typeof part === 'string' || typeof part === 'number')
+      .join('')
+    const value = props.value === undefined ? text : String(props.value)
+    out.push({ value, label: text || value, disabled: props.disabled })
+  })
+  return out
+}
+
+/**
+ * 计算弹层位置：空间不足时向上展开，并约束最大高度。
+ * 用 fixed 定位 + portal 渲染，避免被 Modal 的滚动容器裁切。
+ */
+function usePopover(
+  open: boolean,
+  anchorRef: RefObject<HTMLElement | null>,
+  panelRef: RefObject<HTMLDivElement | null>,
+  onClose: () => void,
+  maxHeight = 296
+): PopoverPos | null {
+  const [pos, setPos] = useState<PopoverPos | null>(null)
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null)
+      return
+    }
+    const el = anchorRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const below = window.innerHeight - rect.bottom - 12
+    const above = rect.top - 12
+    const up = below < 190 && above > below
+    const maxH = Math.max(132, Math.min(maxHeight, (up ? above : below) - 4))
+    setPos(
+      up
+        ? { left: rect.left, width: rect.width, bottom: window.innerHeight - rect.top + 6, maxH }
+        : { left: rect.left, width: rect.width, top: rect.bottom + 6, maxH }
+    )
+  }, [open, anchorRef, maxHeight])
+
+  // 页面滚动或窗口缩放时关闭，避免弹层与触发器脱位（弹层内部滚动不算）
+  useEffect(() => {
+    if (!open) return undefined
+    const onShift = (event: Event): void => {
+      const target = event.target
+      if (target instanceof Node && panelRef.current?.contains(target)) return
+      onClose()
+    }
+    window.addEventListener('resize', onShift)
+    window.addEventListener('scroll', onShift, true)
+    return () => {
+      window.removeEventListener('resize', onShift)
+      window.removeEventListener('scroll', onShift, true)
+    }
+  }, [open, onClose, panelRef])
+
+  return pos
+}
+
+function useOutsideClose(
+  open: boolean,
+  anchorRef: RefObject<HTMLElement | null>,
+  panelRef: RefObject<HTMLElement | null>,
+  onClose: () => void
+): void {
+  useEffect(() => {
+    if (!open) return undefined
+    const onDown = (event: MouseEvent): void => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (anchorRef.current?.contains(target)) return
+      if (panelRef.current?.contains(target)) return
+      onClose()
+    }
+    document.addEventListener('mousedown', onDown, true)
+    return () => document.removeEventListener('mousedown', onDown, true)
+  }, [open, onClose, anchorRef, panelRef])
+}
+
+export function Select({
+  value,
+  onChange,
+  children,
+  className,
+  disabled,
+  placeholder = '请选择',
+  ...rest
+}: {
+  value?: string | number
+  onChange?: (event: DropdownChangeEvent) => void
+  children?: ReactNode
+  className?: string
+  disabled?: boolean
+  placeholder?: string
+  name?: string
+  id?: string
+  title?: string
+  style?: React.CSSProperties
+}) {
+  const options = useMemo(() => collectOptions(children), [children])
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(-1)
+  const anchorRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  const currentValue = value === undefined || value === null ? '' : String(value)
+  const current = options.find((option) => option.value === currentValue)
+
+  const close = useCallback(() => setOpen(false), [])
+  const pos = usePopover(open, anchorRef, panelRef, close)
+  useOutsideClose(open, anchorRef, panelRef, close)
+
+  const choose = (option: DropdownOption): void => {
+    if (option.disabled) return
+    onChange?.({ target: { value: option.value }, currentTarget: { value: option.value } })
+    setOpen(false)
+    anchorRef.current?.focus()
+  }
+
+  const reveal = (): void => {
+    const index = options.findIndex((option) => option.value === currentValue)
+    setActive(index >= 0 ? index : options.findIndex((option) => !option.disabled))
+    setOpen(true)
+  }
+
+  const move = (step: number): void => {
+    if (options.length === 0) return
+    let next = active
+    for (let i = 0; i < options.length; i += 1) {
+      next = (next + step + options.length) % options.length
+      if (!options[next].disabled) break
+    }
+    setActive(next)
+  }
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
+    if (event.key === 'Escape') {
+      setOpen(false)
+      return
+    }
+    if (!open) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+        event.preventDefault()
+        reveal()
+      }
+      return
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      move(1)
+      return
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      move(-1)
+      return
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      if (options[active]) choose(options[active])
+      return
+    }
+    if (event.key === 'Tab') setOpen(false)
+  }
+
+  return (
+    <>
+      <button
+        ref={anchorRef}
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={clsx(
+          'field flex cursor-pointer items-center gap-2 text-left',
+          open && 'is-open',
+          disabled && 'cursor-not-allowed opacity-50',
+          className
+        )}
+        onClick={() => (open ? setOpen(false) : reveal())}
+        onKeyDown={onKeyDown}
+        {...rest}
+      >
+        <span className={clsx('min-w-0 flex-1 truncate', current ? 'text-t1' : 'text-t3')}>
+          {current?.label ?? placeholder}
+        </span>
+        <ChevronDown
+          size={13}
+          strokeWidth={1.9}
+          className={clsx(
+            'shrink-0 transition-transform duration-fast',
+            open ? 'rotate-180 text-accent' : 'text-t3'
+          )}
+        />
+      </button>
+      {open && pos
+        ? createPortal(
+            <div
+              ref={panelRef}
+              role="listbox"
+              className={PANEL_CLASS}
+              style={{
+                left: pos.left,
+                width: pos.width,
+                top: pos.top,
+                bottom: pos.bottom,
+                maxHeight: pos.maxH
+              }}
+            >
+              {options.length === 0 ? (
+                <p className="px-2.5 py-2 text-[12px] text-t3">暂无可选项</p>
+              ) : (
+                options.map((option, index) => {
+                  const selected = option.value === currentValue
+                  return (
+                    <button
+                      key={`${option.value}-${index}`}
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      disabled={option.disabled}
+                      onMouseEnter={() => setActive(index)}
+                      onClick={() => choose(option)}
+                      className={clsx(
+                        'flex w-full items-center gap-2 rounded-[6px] px-2.5 py-[6px] text-left text-[12.5px] transition-colors duration-fast',
+                        selected
+                          ? 'bg-accent-soft text-accent'
+                          : index === active
+                            ? 'bg-sunken text-t1'
+                            : 'text-t2',
+                        option.disabled && 'opacity-40'
+                      )}
+                    >
+                      <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                      {selected ? <Check size={12} strokeWidth={2.2} className="shrink-0" /> : null}
+                    </button>
+                  )
+                })
+              )}
+            </div>,
+            document.body
+          )
+        : null}
+    </>
+  )
+}
+
+/**
+ * 可输入的下拉框：既能从已有选项里挑，也能直接敲一个新值。
+ */
+export function Combobox({
+  value,
+  onChange,
+  options,
+  placeholder,
+  className,
+  disabled,
+  allowCreate = false,
+  createHint = '保存时自动新建',
+  emptyText = '没有匹配的项'
+}: {
+  value: string
+  onChange: (value: string) => void
+  options: ComboboxOption[]
+  placeholder?: string
+  className?: string
+  disabled?: boolean
+  allowCreate?: boolean
+  createHint?: string
+  emptyText?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState<string | null>(null)
+  const [active, setActive] = useState(0)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  const keyword = (draft ?? '').trim()
+  const lower = keyword.toLowerCase()
+
+  const matched = useMemo(() => {
+    if (!lower) return options
+    return options.filter(
+      (option) =>
+        option.value.toLowerCase().includes(lower) ||
+        option.label.toLowerCase().includes(lower) ||
+        (option.hint ?? '').toLowerCase().includes(lower)
+    )
+  }, [options, lower])
+
+  const visible = matched.slice(0, 80)
+  const canCreate =
+    allowCreate && keyword !== '' && !options.some((option) => option.value.toLowerCase() === lower)
+
+  const rows: (ComboboxOption & { create?: boolean })[] = canCreate
+    ? [...visible, { value: keyword, label: keyword, hint: createHint, create: true }]
+    : visible
+
+  const close = useCallback(() => {
+    setOpen(false)
+    setDraft(null)
+  }, [])
+  const pos = usePopover(open, anchorRef, panelRef, close)
+  useOutsideClose(open, anchorRef, panelRef, close)
+
+  const choose = (next: string): void => {
+    onChange(next)
+    setOpen(false)
+    setDraft(null)
+    inputRef.current?.focus()
+  }
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Escape') {
+      close()
+      return
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      if (!open) setOpen(true)
+      setActive((prev) => Math.min(prev + 1, Math.max(rows.length - 1, 0)))
+      return
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setActive((prev) => Math.max(prev - 1, 0))
+      return
+    }
+    if (event.key === 'Enter') {
+      if (!open) return
+      event.preventDefault()
+      const row = rows[active]
+      if (row) choose(row.value)
+      return
+    }
+    if (event.key === 'Tab') setOpen(false)
+  }
+
+  return (
+    <div ref={anchorRef} className={clsx('relative', className)}>
+      <input
+        ref={inputRef}
+        className={clsx('field mono pr-8', open && 'is-open', disabled && 'opacity-50')}
+        value={value}
+        disabled={disabled}
+        placeholder={placeholder}
+        autoComplete="off"
+        spellCheck={false}
+        onChange={(event) => {
+          onChange(event.target.value)
+          setDraft(event.target.value)
+          setActive(0)
+          setOpen(true)
+        }}
+        onFocus={() => {
+          setDraft(null)
+          setActive(0)
+          setOpen(true)
+        }}
+        onKeyDown={onKeyDown}
+      />
+      <ChevronDown
+        size={13}
+        strokeWidth={1.9}
+        className={clsx(
+          'pointer-events-none absolute right-[11px] top-1/2 -translate-y-1/2 transition-transform duration-fast',
+          open ? 'rotate-180 text-accent' : 'text-t3'
+        )}
+      />
+      {open && pos
+        ? createPortal(
+            <div
+              ref={panelRef}
+              role="listbox"
+              className={PANEL_CLASS}
+              style={{
+                left: pos.left,
+                width: Math.max(pos.width, 200),
+                top: pos.top,
+                bottom: pos.bottom,
+                maxHeight: pos.maxH
+              }}
+            >
+              {rows.length === 0 ? (
+                <p className="px-2.5 py-2 text-[12px] text-t3">{emptyText}</p>
+              ) : (
+                rows.map((row, index) => {
+                  const selected = !row.create && row.value === value
+                  return (
+                    <button
+                      key={`${row.value}-${index}`}
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      onMouseEnter={() => setActive(index)}
+                      onClick={() => choose(row.value)}
+                      className={clsx(
+                        'flex w-full items-center gap-2 rounded-[6px] px-2.5 py-[6px] text-left text-[12.5px] transition-colors duration-fast',
+                        selected
+                          ? 'bg-accent-soft text-accent'
+                          : index === active
+                            ? 'bg-sunken text-t1'
+                            : 'text-t2',
+                        row.create && 'text-t2'
+                      )}
+                    >
+                      {row.create ? (
+                        <Plus size={12} strokeWidth={2} className="shrink-0 text-accent" />
+                      ) : null}
+                      <span className="min-w-0 flex-1 truncate">{row.label}</span>
+                      {row.hint ? (
+                        <span className="shrink-0 text-[11px] text-t3">{row.hint}</span>
+                      ) : null}
+                      {selected ? <Check size={12} strokeWidth={2.2} className="shrink-0" /> : null}
+                    </button>
+                  )
+                })
+              )}
+            </div>,
+            document.body
+          )
+        : null}
+    </div>
+  )
 }
 
 export function Field({
@@ -83,8 +560,37 @@ export function Field({
   )
 }
 
-export function Dot({ tone = 'warn' }: { tone?: 'warn' | 'accent' | 'muted' }) {
-  const color = tone === 'warn' ? 'bg-warn' : tone === 'accent' ? 'bg-accent' : 'bg-t3'
+export function Switch({
+  checked,
+  onChange,
+  disabled
+}: {
+  checked: boolean
+  onChange: (next: boolean) => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={clsx(
+        'relative h-[19px] w-[33px] shrink-0 rounded-full transition-colors duration-fast',
+        disabled && 'opacity-40'
+      )}
+      style={{ background: checked ? 'var(--accent)' : 'var(--hair-strong)' }}
+    >
+      <span
+        className="absolute top-[2px] h-[15px] w-[15px] rounded-full bg-white transition-[left] duration-fast"
+        style={{ left: checked ? 16 : 2 }}
+      />
+    </button>
+  )
+}
+
+export function Dot({ tone = 'warn' }: { tone?: 'warn' | 'accent' | 'muted' }) {  const color = tone === 'warn' ? 'bg-warn' : tone === 'accent' ? 'bg-accent' : 'bg-t3'
   return <span className={clsx('inline-block h-1 w-1 rounded-full', color)} />
 }
 

@@ -73,6 +73,71 @@ export interface McpStatus {
   version: string
 }
 
+export interface WebdavStatus {
+  configured: boolean
+  enabled: boolean
+  url: string
+  username: string
+  hasPassword: boolean
+  encrypted: boolean
+  remoteDir: string
+  autoBackup: boolean
+  keepCount: number
+  lastBackupAt: string | null
+  lastBackupFile: string | null
+  lastError: string | null
+}
+
+export interface WebdavPatch {
+  enabled?: boolean
+  url?: string
+  username?: string
+  password?: string
+  remoteDir?: string
+  autoBackup?: boolean
+  keepCount?: number
+}
+
+export interface RemoteBackup {
+  name: string
+  href: string
+  size: number
+  modifiedAt: string
+}
+
+export interface WebdavTestResult {
+  ok: boolean
+  message: string
+  latencyMs: number
+}
+
+export interface WebdavBackupResult {
+  file: string
+  bytes: number
+  at: string
+  pruned: string[]
+}
+
+export interface AppInfo {
+  name: string
+  version: string
+  electron: string
+  chrome: string
+  node: string
+  v8: string
+  platform: string
+  packaged: boolean
+  dataDir: string
+  userData: string
+  dbBytes: number
+  counts: {
+    components: number
+    suppliers: number
+    movements: number
+    locations: number
+  }
+}
+
 export const api = {
   components: {
     list: (query: ComponentListQuery) => call<Page<Component>>(IPC.componentsList, query),
@@ -114,6 +179,19 @@ export const api = {
     status: () => call<McpStatus>(IPC.mcpStatus),
     restart: () => call<McpStatus>(IPC.mcpRestart),
     rotateToken: () => call<McpStatus>(IPC.mcpRotateToken)
+  },
+  webdav: {
+    status: () => call<WebdavStatus>(IPC.webdavStatus),
+    save: (patch: WebdavPatch) => call<WebdavStatus>(IPC.webdavSave, patch),
+    test: () => call<WebdavTestResult>(IPC.webdavTest),
+    backup: () => call<WebdavBackupResult>(IPC.webdavBackup),
+    list: () => call<RemoteBackup[]>(IPC.webdavList),
+    restore: (name: string) =>
+      call<{ file: string; safetySnapshot: string }>(IPC.webdavRestore, { name })
+  },
+  app: {
+    info: () => call<AppInfo>(IPC.appInfo),
+    openExternal: (url: string) => call<boolean>(IPC.appOpenExternal, { url })
   },
   transfer: {
     export: (entity: TransferEntity, format: 'xlsx' | 'csv', kind?: ItemKind) =>

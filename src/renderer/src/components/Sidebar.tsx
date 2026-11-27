@@ -4,6 +4,7 @@ import {
   Boxes,
   CircuitBoard,
   Cpu,
+  Info,
   LayoutGrid,
   MapPin,
   Package,
@@ -23,6 +24,7 @@ export type ViewKey =
   | 'movements'
   | 'locations'
   | 'settings'
+  | 'about'
 
 interface NavItem {
   key: ViewKey
@@ -46,6 +48,11 @@ const SUB_NAV: NavItem[] = [
   { key: 'movements', label: '出入库流水', icon: ArrowLeftRight }
 ]
 
+const FOOTER_NAV: NavItem[] = [
+  { key: 'settings', label: '设置', icon: Settings },
+  { key: 'about', label: '关于', icon: Info }
+]
+
 function NavButton({
   item,
   active,
@@ -60,14 +67,16 @@ function NavButton({
     <button
       type="button"
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
       className={clsx(
-        'mb-0.5 flex h-9 items-center gap-2.5 rounded-ctl px-2.5 text-[13px] transition-colors duration-fast',
+        // w-full 让每一项都占满侧栏宽度，点击热区不再随文字长短变化
+        'mb-0.5 flex h-9 w-full items-center gap-2.5 rounded-ctl px-3 text-left text-[13px] transition-colors duration-fast',
         active ? 'font-medium' : 'text-t2 hover:bg-sunken hover:text-t1'
       )}
       style={active ? { background: 'var(--accent-soft)', color: 'var(--accent)' } : undefined}
     >
-      <Icon size={15} strokeWidth={1.6} />
-      {item.label}
+      <Icon size={15} strokeWidth={1.6} className="shrink-0" />
+      <span className="truncate">{item.label}</span>
     </button>
   )
 }
@@ -85,7 +94,7 @@ export function Sidebar({
       style={{ background: 'var(--bg-panel)' }}
     >
       {MAIN_NAV.map((item, index) => (
-        <div key={item.key}>
+        <div key={item.key} className="w-full">
           {index === 1 ? <div className="my-2 h-px" style={{ background: 'var(--hair)' }} /> : null}
           <NavButton item={item} active={view === item.key} onClick={() => onChange(item.key)} />
         </div>
@@ -94,21 +103,20 @@ export function Sidebar({
       <div className="my-2 h-px" style={{ background: 'var(--hair)' }} />
 
       {SUB_NAV.map((item) => (
-        <NavButton
-          key={item.key}
-          item={item}
-          active={view === item.key}
-          onClick={() => onChange(item.key)}
-        />
+        <div key={item.key} className="w-full">
+          <NavButton item={item} active={view === item.key} onClick={() => onChange(item.key)} />
+        </div>
       ))}
 
-      <NavButton
-        item={{ key: 'settings', label: '设置', icon: Settings }}
-        active={view === 'settings'}
-        onClick={() => onChange('settings')}
-      />
-
-      <div className="mt-auto px-2.5 pb-1 text-[11px] text-t3">BoxFlow v0.1.0 · 本地数据</div>
+      <div className="mt-auto">
+        <div className="my-2 h-px" style={{ background: 'var(--hair)' }} />
+        {FOOTER_NAV.map((item) => (
+          <div key={item.key} className="w-full">
+            <NavButton item={item} active={view === item.key} onClick={() => onChange(item.key)} />
+          </div>
+        ))}
+        <p className="px-3 pb-1 pt-1.5 text-[11px] text-t3">BoxFlow v{__APP_VERSION__} · 本地数据</p>
+      </div>
     </nav>
   )
 }

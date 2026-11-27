@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import clsx from 'clsx'
 import { FolderOpen } from 'lucide-react'
 import { api, ApiError } from '@renderer/lib/api'
-import { Button, Field, Input, Modal, useToast } from '@renderer/components/ui'
+import { Button, Field, Input, Modal, Switch, useToast } from '@renderer/components/ui'
 import { PageHeader } from '@renderer/features/overview/OverviewPage'
 import { McpPanel } from './McpPanel'
+import { WebdavPanel } from './WebdavPanel'
 
 function Card({
   title,
@@ -24,36 +24,6 @@ function Card({
       </header>
       <div className="px-4 pb-4">{children}</div>
     </section>
-  )
-}
-
-function Switch({
-  checked,
-  onChange,
-  disabled
-}: {
-  checked: boolean
-  onChange: (next: boolean) => void
-  disabled?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={clsx(
-        'relative h-[19px] w-[33px] shrink-0 rounded-full transition-colors duration-fast',
-        disabled && 'opacity-40'
-      )}
-      style={{ background: checked ? 'var(--accent)' : 'var(--hair-strong)' }}
-    >
-      <span
-        className="absolute top-[2px] h-[15px] w-[15px] rounded-full bg-white transition-[left] duration-fast"
-        style={{ left: checked ? 16 : 2 }}
-      />
-    </button>
   )
 }
 
@@ -160,6 +130,13 @@ export function SettingsPage() {
           </SettingRow>
         </Card>
 
+        <Card
+          title="WebDAV 备份"
+          description="把数据库快照传到坚果云等 WebDAV 网盘，换电脑或误删时可一键恢复"
+        >
+          <WebdavPanel />
+        </Card>
+
         <Card title="窗口与启动" description="关闭窗口后程序会留在系统托盘，AI 仍可读写库存">
           <div style={{ marginTop: -12 }}>
             <SettingRow label="关闭窗口时最小化到托盘" hint="关掉后点 × 会直接退出程序">
@@ -205,7 +182,7 @@ export function SettingsPage() {
         </Card>
 
         <p className="text-[11.5px] text-t3">
-          BoxFlow v0.1.0 · Electron + SQLite · 数据仅存于本机
+          BoxFlow v{__APP_VERSION__} · Electron + SQLite · 数据仅存于本机
         </p>
       </div>
 

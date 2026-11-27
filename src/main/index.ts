@@ -8,6 +8,7 @@ import { createMainWindow } from './window'
 import { createTray } from './tray'
 import { registerIpcHandlers } from './ipc'
 import { disposeMcp, onMcpActivity, startMcp } from './mcp'
+import { autoBackupIfDue } from './modules/backup/service'
 import { installCrashHandlers, logMain } from './crashlog'
 
 const isScreenshotMode = process.argv.includes('--screenshot')
@@ -110,6 +111,11 @@ if (!gotLock) {
     })
 
     void startMcp()
+
+    // 每日一次的 WebDAV 自动备份：延后 45 秒，避开启动时的数据库与界面初始化
+    setTimeout(() => {
+      void autoBackupIfDue()
+    }, 45_000)
 
     if (isScreenshotMode) {
       captureAndExit(mainWindow)

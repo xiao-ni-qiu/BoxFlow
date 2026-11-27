@@ -9,6 +9,7 @@ import { SuppliersPage } from './features/suppliers/SuppliersPage'
 import { MovementsPage } from './features/movements/MovementsPage'
 import { LocationsPage } from './features/locations/LocationsPage'
 import { SettingsPage } from './features/settings/SettingsPage'
+import { AboutPage } from './features/about/AboutPage'
 
 const TITLES: Record<ViewKey, string> = {
   overview: '概览',
@@ -20,7 +21,8 @@ const TITLES: Record<ViewKey, string> = {
   suppliers: '供应商',
   movements: '出入库流水',
   locations: '存放位置',
-  settings: '设置'
+  settings: '设置',
+  about: '关于'
 }
 
 /** 五个物料页面共用一套列表与表单，只是大类不同 */
@@ -71,6 +73,7 @@ export function App() {
           {view === 'movements' ? <MovementsPage /> : null}
           {view === 'locations' ? <LocationsPage /> : null}
           {view === 'settings' ? <SettingsPage /> : null}
+          {view === 'about' ? <AboutPage /> : null}
         </main>
       </div>
     </div>

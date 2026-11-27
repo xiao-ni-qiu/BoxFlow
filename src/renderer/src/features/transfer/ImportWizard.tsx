@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import { FileSpreadsheet, RotateCcw, Upload } from 'lucide-react'
 import { api, ApiError } from '@renderer/lib/api'
-import { Button, Modal, useToast } from '@renderer/components/ui'
+import { Button, Modal, Select, useToast } from '@renderer/components/ui'
 import {
   ENTITY_COLUMNS,
   ENTITY_LABELS,
@@ -314,10 +314,10 @@ export function ImportWizard({
                   >
                     <span className="min-w-0 flex-1 truncate text-[11.5px] text-t2">{header}</span>
                     <span className="text-[11px] text-t3">→</span>
-                    <select
+                    <Select
                       value={current}
                       onChange={(e) => changeMapping(header, e.target.value)}
-                      className="field h-[26px] w-[150px] shrink-0 px-2 text-[11.5px]"
+                      className="!h-[26px] !w-[150px] shrink-0 !px-2 !text-[11.5px]"
                     >
                       <option value="">忽略此列</option>
                       {columns.map((col) => (
@@ -329,7 +329,7 @@ export function ImportWizard({
                           {col.label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
                 )
               })}

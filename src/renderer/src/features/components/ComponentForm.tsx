@@ -2,8 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { KIND_META, KIND_OPTIONS, type ItemKind } from '@shared/constants'
 import type { Component } from '@shared/types'
-import { api, ApiError } from '@renderer/lib/api'
-import { Button, Field, Input, Modal, Select, Textarea, useToast } from '@renderer/components/ui'
+import { api, ApiError, type LocationNode } from '@renderer/lib/api'
+import {
+  Button,
+  Combobox,
+  Field,
+  Input,
+  Modal,
+  Select,
+  Textarea,
+  useToast,
+  type ComboboxOption
+} from '@renderer/components/ui'
 
 interface FormState {
   kind: ItemKind
@@ -83,6 +93,17 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** 位置树按层级拍平，下拉里保留层级缩进，仍然只提交 fullCode */
+function flattenLocations(nodes: LocationNode[], depth = 0): ComboboxOption[] {
+  return nodes.flatMap((node) => [
+    {
+      value: node.fullCode,
+      label: `${'\u00a0'.repeat(depth * 3)}${node.fullCode}${node.name ? ` · ${node.name}` : ''}`
+    },
+    ...flattenLocations(node.children, depth + 1)
+  ])
+}
+
 export function ComponentForm({
   open,
   onClose,
@@ -104,6 +125,17 @@ export function ComponentForm({
     queryFn: () => api.suppliers.list({ pageSize: 200 }),
     enabled: open
   })
+
+  const { data: locationTree } = useQuery({
+    queryKey: ['locations', 'tree'],
+    queryFn: () => api.locations.tree(),
+    enabled: open
+  })
+
+  const locationOptions = useMemo(
+    () => flattenLocations(locationTree ?? []),
+    [locationTree]
+  )
 
   useEffect(() => {
     if (!open) return
@@ -290,12 +322,18 @@ export function ComponentForm({
             inputMode="numeric"
           />
         </Field>
-        <Field label="存放位置" hint="如 A-02-03，不存在会自动建档">
-          <Input
+        <Field
+          label="存放位置"
+          hint={locationOptions.length > 0 ? '可选已有位置，也可直接输入新编码' : '输入编码，保存时自动建档'}
+        >
+          <Combobox
             value={form.locationCode}
-            onChange={(e) => set('locationCode', e.target.value)}
-            placeholder="A-02-03"
-            className="mono"
+            onChange={(next) => set('locationCode', next)}
+            options={locationOptions}
+            allowCreate
+            createHint="保存时自动建档"
+            emptyText="没有匹配的位置，直接输入即可新建"
+            placeholder="选择或输入，如 A-02-03"
           />
         </Field>
       </div>

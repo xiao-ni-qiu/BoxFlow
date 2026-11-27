@@ -40,6 +40,16 @@ export const IPC = {
   settingsBackupNow: 'settings:backupNow',
   settingsResetDemo: 'settings:resetDemo',
 
+  webdavStatus: 'webdav:status',
+  webdavSave: 'webdav:save',
+  webdavTest: 'webdav:test',
+  webdavBackup: 'webdav:backup',
+  webdavList: 'webdav:list',
+  webdavRestore: 'webdav:restore',
+
+  appInfo: 'app:info',
+  appOpenExternal: 'app:openExternal',
+
   windowMinimize: 'window:minimize',
   windowMaximize: 'window:maximize',
   windowClose: 'window:close'
