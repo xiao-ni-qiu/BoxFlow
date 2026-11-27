@@ -1,0 +1,5 @@
+/* MiSans（小米开源字体）子集化分片，来自 npm 包 misans（https://github.com/dsrkafuu/misans）
+   授权：MiSans 由小米免费商用授权，需在软件中注明使用；脚本按 Apache-2.0 分发。
+   每个 @font-face 按 unicode-range 拆分，浏览器仅按需加载命中的分片。 */
+@import '../assets/fonts/MiSans-Regular.min.css';
+@import '../assets/fonts/MiSans-Semibold.min.css';

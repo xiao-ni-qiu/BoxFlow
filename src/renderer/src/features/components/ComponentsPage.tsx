@@ -22,7 +22,8 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: 'location', label: '按位置' }
 ]
 
-const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface py-2 text-left text-[12px] font-normal text-t3'
+const TH =
+  'sticky top-0 z-[2] whitespace-nowrap bg-surface py-2.5 text-left text-[11px] font-normal tracking-[0.02em] text-t3'
 const TD = 'whitespace-nowrap pr-3'
 
 export function ComponentsPage({ kind }: { kind: ItemKind }) {
@@ -231,36 +232,41 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
       </div>
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col px-7">
-        <div className="min-h-0 flex-1 overflow-auto">
+        <div className="min-h-0 flex-1 overflow-auto rounded-card border border-hair bg-surface shadow-[0_1px_2px_rgba(20,20,19,0.04)]">
           <table className="w-full table-fixed border-collapse">
             <colgroup>
-              <col />
-              <col style={{ width: 92 }} />
-              <col style={{ width: 84 }} />
+              <col style={{ width: 150 }} />
+              <col style={{ width: 128 }} />
               <col style={{ width: 88 }} />
-              <col style={{ width: 84 }} />
-              <col style={{ width: 104 }} />
+              <col style={{ width: 92 }} />
+              <col style={{ width: 88 }} />
+              <col style={{ width: 108 }} />
               <col style={{ width: 96 }} />
             </colgroup>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--hair-strong)' }}>
-                <th className={TH}>{meta.specLabel}</th>
-                <th className={TH}>{meta.makerLabel}</th>
+                <th className={clsx(TH, 'text-center')}>{meta.specLabel}</th>
+                <th className={clsx(TH, 'text-center')}>{meta.makerLabel}</th>
                 <th className={TH}>分类</th>
                 <th className={TH}>{meta.packageLabel}</th>
                 <th className={clsx(TH, 'pr-3 text-right')}>库存</th>
                 <th className={TH}>位置</th>
-                <th className={clsx(TH, 'text-right')}>更新</th>
+                <th className={clsx(TH, 'pr-4 text-right')}>更新</th>
               </tr>
             </thead>
             <tbody>
               {isLoading
                 ? Array.from({ length: 8 }).map((_, index) => (
-                    <tr key={index} style={{ height: 44, borderBottom: '1px solid var(--hair)' }}>
+                    <tr key={index} style={{ height: 48, borderBottom: '1px solid var(--hair)' }}>
                       {Array.from({ length: 7 }).map((__, cell) => (
-                        <td key={cell} className="pr-3">
+                        <td key={cell} className={clsx('pr-3', cell === 0 && 'text-center')}>
                           {cell === 0 || cell === 1 || cell === 3 || cell === 5 ? (
-                            <span className="block h-2.5 w-3/4 rounded bg-sunken" />
+                            <span
+                              className={clsx(
+                                'block h-2.5 w-3/4 rounded bg-sunken',
+                                cell === 0 && 'mx-auto'
+                              )}
+                            />
                           ) : null}
                         </td>
                       ))}
@@ -275,13 +281,16 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                         onClick={() => setSelected(item)}
                         className="group cursor-pointer transition-colors duration-fast hover:bg-app"
                         style={{
-                          height: 44,
+                          height: 48,
                           borderBottom: '1px solid var(--hair)',
-                          background: active ? 'var(--accent-soft)' : undefined
+                          background: active ? 'var(--accent-soft)' : undefined,
+                          boxShadow: active ? 'inset 2px 0 0 var(--accent)' : undefined
                         }}
                       >
-                        <td className={clsx(TD, 'mono text-t1')}>{item.partNumber}</td>
-                        <td className={clsx(TD, 'text-[12.5px] text-t2')}>
+                        <td className={clsx(TD, 'mono text-center text-[12.5px] font-medium text-t1')}>
+                          {item.partNumber}
+                        </td>
+                        <td className={clsx(TD, 'text-center text-[12.5px] text-t2')}>
                           <span className="block truncate">{dash(item.manufacturer)}</span>
                         </td>
                         <td className={clsx(TD, 'text-[12.5px] text-t2')}>
@@ -294,20 +303,20 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                         >
                           {low ? (
                             <span
-                              className="mr-1 inline-block h-1 w-1 rounded-full align-middle"
+                              className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle"
                               style={{ background: 'var(--warn)' }}
                             />
                           ) : null}
                           {formatNumber(item.quantity)}
                         </td>
                         <td className={clsx(TD, 'mono text-t2')}>{dash(item.locationFullCode)}</td>
-                        <td className="relative py-0 pl-0 pr-0 text-right">
+                        <td className="relative py-0 pl-0 pr-4 text-right">
                           <span className="text-[11.5px] text-t3 transition-opacity duration-fast group-hover:opacity-0">
                             {formatDateTime(item.updatedAt).slice(5, 10)}
                           </span>
                           <span
-                            className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-ctl p-0.5 opacity-0 transition-opacity duration-fast group-hover:opacity-100"
-                            style={{ background: 'var(--bg-surface)' }}
+                            className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
+                            style={{ background: 'var(--bg-surface)', borderColor: 'var(--hair)' }}
                           >
                             <IconButton
                               label="入库"

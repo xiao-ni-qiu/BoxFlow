@@ -248,6 +248,9 @@ export function AboutPage() {
             本项目不收集任何使用数据，不含遥测与联网上报。唯一的外部请求是你主动配置的 WebDAV 备份，
             以及 AI 客户端对 127.0.0.1 的本地调用。
           </p>
+          <p className="mt-2 text-[11.5px] leading-relaxed text-t3">
+            界面字体采用小米开源字体 MiSans（免费商用授权）；字体文件经子集化仅作随程序内嵌使用，不做二次分发。
+          </p>
         </Section>
       </div>
     </div>

@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --font-ui: 'MiSans', -apple-system, 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI',
+    'PingFang SC', system-ui, sans-serif;
   --bg-app: #fafaf9;
   --bg-panel: #fafaf9;
   --bg-surface: #ffffff;
@@ -42,6 +44,12 @@
   --ok-soft: rgba(74, 222, 128, 0.12);
 }
 
+/* 字体切换：通过 html 的 data-font 属性覆盖 --font-ui */
+[data-font='system'] {
+  --font-ui: -apple-system, 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI',
+    'PingFang SC', system-ui, sans-serif;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -57,9 +65,7 @@
   body {
     background: var(--bg-app);
     color: var(--text-1);
-    font-family:
-      -apple-system, 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI', 'PingFang SC',
-      system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 13px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen } from 'lucide-react'
+import { FolderOpen, Type } from 'lucide-react'
 import { api, ApiError } from '@renderer/lib/api'
-import { Button, Field, Input, Modal, Switch, useToast } from '@renderer/components/ui'
+import { Button, Field, Input, Modal, Select, Switch, useToast } from '@renderer/components/ui'
 import { PageHeader } from '@renderer/features/overview/OverviewPage'
 import { AiPanel } from './AiPanel'
 import { McpPanel } from './McpPanel'
@@ -143,6 +143,29 @@ export function SettingsPage() {
           description="选一家模型服务商，填好 Key 就能在「AI 助手」页用对话管理库存"
         >
           <AiPanel />
+        </Card>
+
+        <Card
+          title="外观"
+          description="切换界面字体，应用内所有文字即时生效"
+        >
+          <div style={{ marginTop: -12 }}>
+            <SettingRow label="界面字体" hint="默认使用小米 MiSans，免费可商用">
+              <div className="w-[220px]">
+                <Select
+                  value={settings.fontFamily ?? 'misans'}
+                  onChange={(e) => patch.mutate({ fontFamily: e.target.value })}
+                >
+                  <option value="misans">MiSans（小米）</option>
+                  <option value="system">系统默认字体</option>
+                </Select>
+              </div>
+            </SettingRow>
+          </div>
+          <p className="mt-1 flex items-center gap-1.5 text-[11.5px] text-t3">
+            <Type size={12} strokeWidth={1.6} />
+            本软件界面使用小米开源字体 MiSans，特此注明。
+          </p>
         </Card>
 
         <Card title="窗口与启动" description="关闭窗口后程序会留在系统托盘，AI 仍可读写库存">

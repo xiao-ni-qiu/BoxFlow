@@ -141,4 +141,6 @@ export interface AppSettings {
   minimizeToTray: boolean
   launchAtLogin: boolean
   closeToTray: boolean
+  /** 界面字体，默认 'misans'（小米 MiSans） */
+  fontFamily: string
 }

@@ -23,7 +23,8 @@ function defaults(): AppSettings {
     mcpEnabled: true,
     minimizeToTray: true,
     closeToTray: true,
-    launchAtLogin: false
+    launchAtLogin: false,
+    fontFamily: 'misans'
   }
 }
 

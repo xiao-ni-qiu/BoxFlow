@@ -20,6 +20,11 @@ export function assertSettingsPatch(payload: Record<string, unknown>): Partial<A
   if ('minimizeToTray' in payload) patch.minimizeToTray = Boolean(payload.minimizeToTray)
   if ('closeToTray' in payload) patch.closeToTray = Boolean(payload.closeToTray)
   if ('launchAtLogin' in payload) patch.launchAtLogin = Boolean(payload.launchAtLogin)
+  if ('fontFamily' in payload) {
+    const value = String(payload.fontFamily ?? '').trim()
+    if (!value) throw new AppError('VALIDATION_FAILED', '字体不能为空')
+    patch.fontFamily = value
+  }
 
   return patch
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ItemKind } from '@shared/constants'
 import { isSearchHotkey, requestSearchFocus } from '@renderer/lib/hooks'
+import { api } from '@renderer/lib/api'
 import { Sidebar, type ViewKey } from './components/Sidebar'
 import { TitleBar } from './components/TitleBar'
 import { OverviewPage } from './features/overview/OverviewPage'
@@ -47,6 +48,13 @@ function initialView(): ViewKey {
 export function App() {
   const [view, setView] = useState<ViewKey>(initialView)
   const queryClient = useQueryClient()
+
+  // 界面字体跟随设置切换（默认 MiSans，可换回系统字体）
+  const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: () => api.settings.get() })
+  useEffect(() => {
+    const font = settings?.fontFamily ?? 'misans'
+    document.documentElement.setAttribute('data-font', font === 'system' ? 'system' : 'misans')
+  }, [settings?.fontFamily])
 
   // AI 通过 MCP 写入后，主进程会推一条消息过来，这里刷新受影响的列表
   useEffect(() => {
