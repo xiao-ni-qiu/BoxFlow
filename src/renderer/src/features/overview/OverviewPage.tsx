@@ -84,7 +84,7 @@ export function OverviewPage({ onNavigate }: { onNavigate: (view: ViewKey) => vo
                   className="row-hover flex h-11 items-center gap-3 rounded-ctl px-2"
                   style={{ borderTop: '1px solid var(--hair)' }}
                 >
-                  <span className="mono shrink-0 text-t1">{item.partNumber}</span>
+                  <span className="shrink-0 text-t1">{item.partNumber}</span>
                   <span className="truncate text-[12px] text-t3">{item.manufacturer || '—'}</span>
                   <span className="num ml-auto flex items-center gap-1.5 text-[13px] text-warn">
                     <Dot />

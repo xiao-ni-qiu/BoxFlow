@@ -282,7 +282,7 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                           boxShadow: active ? 'inset 2px 0 0 var(--accent)' : undefined
                         }}
                       >
-                        <td className={clsx(TD, 'mono text-center text-[12.5px] font-medium text-t1')}>
+                        <td className={clsx(TD, 'text-center text-[12.5px] font-medium text-t1')}>
                           {item.partNumber}
                         </td>
                         <td className={clsx(TD, 'text-center text-[12.5px] text-t2')}>
@@ -291,7 +291,7 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                         <td className={clsx(TD, 'text-center text-[12.5px] text-t2')}>
                           <span className="block truncate">{dash(item.category)}</span>
                         </td>
-                        <td className={clsx(TD, 'mono text-center text-t2')}>{dash(item.package)}</td>
+                        <td className={clsx(TD, 'text-center text-t2')}>{dash(item.package)}</td>
                         <td
                           className={clsx(TD, 'num text-[13px]')}
                           style={{ color: low ? 'var(--warn)' : 'var(--text-1)' }}

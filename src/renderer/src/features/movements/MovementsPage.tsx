@@ -119,7 +119,7 @@ export function MovementsPage() {
                     <td className={clsx(TD, 'text-[12.5px] text-t2')}>
                       {MOVEMENT_LABELS[item.type] ?? item.type}
                     </td>
-                    <td className={clsx(TD, 'mono truncate text-t1')}>{item.partNumber ?? '—'}</td>
+                    <td className={clsx(TD, 'truncate text-t1')}>{item.partNumber ?? '—'}</td>
                     <td
                       className={clsx(TD, 'num text-right text-[12.5px]')}
                       style={{ color: item.quantity > 0 ? 'var(--text-1)' : 'var(--text-2)' }}

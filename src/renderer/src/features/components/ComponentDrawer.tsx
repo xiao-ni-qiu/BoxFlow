@@ -47,7 +47,7 @@ export function ComponentDrawer({
     <Drawer open={Boolean(component)} onClose={onClose}>
       <div className="flex items-start gap-3 px-5 pb-4 pt-5">
         <div className="min-w-0">
-          <p className="mono truncate text-[15px] font-medium leading-tight text-t1">
+          <p className="truncate text-[15px] font-medium leading-tight text-t1">
             {component.partNumber}
           </p>
           <p className="mt-1 text-[12px] text-t2">
@@ -112,10 +112,10 @@ export function ComponentDrawer({
       <div className="mt-5 flex-1 overflow-auto px-5 pb-6">
         <p className="mb-1 text-[12px] font-medium text-t2">{meta.label}信息</p>
         <div>
-          <Row label="存放位置" value={dash(component.locationFullCode)} mono />
-          <Row label={meta.packageLabel} value={dash(component.package)} mono />
+          <Row label="存放位置" value={dash(component.locationFullCode)} />
+          <Row label={meta.packageLabel} value={dash(component.package)} />
           <Row label="包装形式" value={dash(component.packaging)} />
-          <Row label="批次号" value={dash(component.dateCode)} mono />
+          <Row label="批次号" value={dash(component.dateCode)} />
           <Row label="主供应商" value={dash(component.supplierName)} />
           <Row label="参考单价" value={component.unitPrice === null ? '—' : `¥ ${formatPrice(component.unitPrice)}`} />
           <Row label="最小起订量" value={component.moq === null ? '—' : formatNumber(component.moq)} />
