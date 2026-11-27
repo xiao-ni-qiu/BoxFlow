@@ -9,6 +9,13 @@ const api: ApiBridge = {
     return () => {
       ipcRenderer.removeListener('main:message', listener)
     }
+  },
+  onAiEvent: (handler: (event: unknown) => void) => {
+    const listener = (_event: unknown, payload: unknown): void => handler(payload)
+    ipcRenderer.on('ai:event', listener)
+    return () => {
+      ipcRenderer.removeListener('ai:event', listener)
+    }
   }
 }
 

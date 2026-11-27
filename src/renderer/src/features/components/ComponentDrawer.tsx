@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Pencil, X } from 'lucide-react'
+import { Pencil, Trash2, X } from 'lucide-react'
 import type { Component } from '@shared/types'
 import { KIND_META, MOVEMENT_LABELS } from '@shared/constants'
 import { api } from '@renderer/lib/api'
@@ -19,12 +19,14 @@ export function ComponentDrawer({
   component,
   onClose,
   onStock,
-  onEdit
+  onEdit,
+  onDelete
 }: {
   component: Component | null
   onClose: () => void
   onStock: (type: 'in' | 'out' | 'adjust') => void
   onEdit: () => void
+  onDelete: () => void
 }) {
   const { data: movements } = useQuery({
     queryKey: ['component-movements', component?.id],
@@ -69,7 +71,7 @@ export function ComponentDrawer({
         </div>
         {low ? <p className="mt-2 text-[12px] text-warn">低于安全库存，建议补货</p> : null}
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex items-center gap-2">
           <Button variant="primary" onClick={() => onStock('in')}>
             入库
           </Button>
@@ -79,6 +81,14 @@ export function ComponentDrawer({
             <Pencil size={13} strokeWidth={1.6} />
             编辑
           </Button>
+          <IconButton
+            label="删除这条物料"
+            className="hover:bg-danger-soft"
+            style={{ color: 'var(--danger)' }}
+            onClick={onDelete}
+          >
+            <Trash2 size={14} strokeWidth={1.7} />
+          </IconButton>
         </div>
       </div>
 

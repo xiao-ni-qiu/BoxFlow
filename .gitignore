@@ -34,3 +34,6 @@ docs/shots/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 打包时若 dist 被占用，可临时输出到这里（见 CONTRIBUTING）
+dist-build/

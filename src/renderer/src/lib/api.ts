@@ -2,6 +2,16 @@ import type { ApiBridge } from '@shared/ipc'
 import { IPC } from '@shared/ipc'
 import type { ItemKind } from '@shared/constants'
 import type {
+  AiChatMessage,
+  AiConfigPatch,
+  AiConfigView,
+  AiConversation,
+  AiEvent,
+  AiSendPayload,
+  AiTestResult,
+  ParsedReport
+} from '@shared/ai'
+import type {
   DuplicateStrategy,
   ImportPreview,
   ImportResult,
@@ -139,6 +149,20 @@ export interface AppInfo {
   }
 }
 
+export interface RemovalImpact {
+  partNumber: string
+  quantity: number
+  movements: number
+  attachments: number
+}
+
+export interface RemovalResult {
+  id: string
+  partNumber: string
+  movements: number
+  attachments: number
+}
+
 export const api = {
   components: {
     list: (query: ComponentListQuery) => call<Page<Component>>(IPC.componentsList, query),
@@ -148,6 +172,8 @@ export const api = {
       call<Component>(IPC.componentsUpdate, { id, patch }),
     archive: (id: string) => call<boolean>(IPC.componentsArchive, { id }),
     restore: (id: string) => call<boolean>(IPC.componentsRestore, { id }),
+    removalImpact: (id: string) => call<RemovalImpact>(IPC.componentsRemovalImpact, { id }),
+    remove: (id: string) => call<RemovalResult>(IPC.componentsDelete, { id }),
     facets: (kind?: ItemKind) => call<Facets>(IPC.componentsFacets, { kind }),
     movements: (id: string, limit = 20) => call<Movement[]>(IPC.componentsMovements, { id, limit })
   },
@@ -182,6 +208,29 @@ export const api = {
     status: () => call<McpStatus>(IPC.mcpStatus),
     restart: () => call<McpStatus>(IPC.mcpRestart),
     rotateToken: () => call<McpStatus>(IPC.mcpRotateToken)
+  },
+  ai: {
+    config: () => call<AiConfigView>(IPC.aiConfig),
+    saveConfig: (patch: AiConfigPatch) => call<AiConfigView>(IPC.aiSaveConfig, patch),
+    test: () => call<AiTestResult>(IPC.aiTest),
+    conversations: () => call<AiConversation[]>(IPC.aiConversations),
+    latest: () => call<AiConversation | null>(IPC.aiLatest),
+    messages: (conversationId: string) =>
+      call<AiChatMessage[]>(IPC.aiMessages, { conversationId }),
+    newConversation: () => call<AiConversation>(IPC.aiNewConversation),
+    removeConversation: (id: string) => call<boolean>(IPC.aiDeleteConversation, { id }),
+    send: (payload: AiSendPayload) =>
+      call<{ conversationId: string; userMessageId: string; assistantId: string }>(
+        IPC.aiSend,
+        payload
+      ),
+    abort: () => call<boolean>(IPC.aiAbort),
+    confirm: (callId: string, approved: boolean) =>
+      call<boolean>(IPC.aiConfirm, { callId, approved }),
+    pickReport: () => call<ParsedReport | null>(IPC.aiPickReport),
+    openKeyUrl: (url: string) => call<boolean>(IPC.aiOpenKeyUrl, { url }),
+    onEvent: (handler: (event: AiEvent) => void) =>
+      window.api.onAiEvent((event) => handler(event as AiEvent))
   },
   webdav: {
     status: () => call<WebdavStatus>(IPC.webdavStatus),

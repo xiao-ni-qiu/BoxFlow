@@ -206,6 +206,28 @@ export const componentsService = {
     componentsRepo.setStatus(id, 'active')
   },
 
+  /** 删除前的影响面：会连带删除多少条流水与附件 */
+  removalImpact(id: string): { partNumber: string; quantity: number; movements: number; attachments: number } {
+    const found = componentsService.get(id)
+    const counts = componentsRepo.cascadeCounts(id)
+    return { partNumber: found.partNumber, quantity: found.quantity, ...counts }
+  },
+
+  /**
+   * 彻底删除一条物料。
+   * stock_movements 与 attachments 的外键都是 ON DELETE CASCADE，这里仍显式清理，
+   * 一是为了返回"连带删了多少"，二是避免外键被意外关闭时留下孤儿行。
+   */
+  remove(id: string): { id: string; partNumber: string; movements: number; attachments: number } {
+    const found = componentsService.get(id)
+    const db = getDb()
+    let counts = { movements: 0, attachments: 0 }
+    db.transaction(() => {
+      counts = componentsRepo.removeCascade(id)
+    })()
+    return { id, partNumber: found.partNumber, ...counts }
+  },
+
   movements(id: string, limit = 20) {
     componentsService.get(id)
     return movementsRepo.forComponent(id, limit)

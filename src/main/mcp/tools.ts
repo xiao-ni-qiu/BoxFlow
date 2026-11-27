@@ -17,14 +17,16 @@ import {
 
 /** 一次工具调用可用的上下文 */
 export interface ToolContext {
-  /** 客户端标识，例如 workbuddy / codex / doubao */
+  /** 客户端标识，例如 workbuddy / codex / doubao，内置助手用 assistant */
   client: string
+  /** 流水里的来源通道：外部 AI 客户端走 mcp，内置助手走 ai */
+  channel?: 'mcp' | 'ai'
 }
 
 /** 记录到流水 operator 字段的来源标签 */
 export function operatorTag(ctx: ToolContext): string {
   const name = (ctx.client || 'mcp').replace(/[^\w.-]/g, '').slice(0, 24)
-  return `mcp:${name || 'unknown'}`
+  return `${ctx.channel ?? 'mcp'}:${name || 'unknown'}`
 }
 
 function humanizeError(err: unknown): ToolResult {

@@ -9,12 +9,14 @@ import {
   MapPin,
   Package,
   Settings,
+  Sparkles,
   Users,
   Wrench
 } from 'lucide-react'
 
 export type ViewKey =
   | 'overview'
+  | 'assistant'
   | 'components'
   | 'boards'
   | 'modules'
@@ -35,6 +37,7 @@ interface NavItem {
 /** 物料是主角，排在一起；供应商与流水属于配套数据，放在分隔线下方 */
 const MAIN_NAV: NavItem[] = [
   { key: 'overview', label: '概览', icon: LayoutGrid },
+  { key: 'assistant', label: 'AI 助手', icon: Sparkles },
   { key: 'components', label: '电子元器件', icon: Boxes },
   { key: 'boards', label: '开发板', icon: CircuitBoard },
   { key: 'modules', label: '电子模块', icon: Cpu },
@@ -93,9 +96,11 @@ export function Sidebar({
       className="flex w-[208px] shrink-0 flex-col px-2.5 py-3"
       style={{ background: 'var(--bg-panel)' }}
     >
-      {MAIN_NAV.map((item, index) => (
+      {MAIN_NAV.map((item) => (
         <div key={item.key} className="w-full">
-          {index === 1 ? <div className="my-2 h-px" style={{ background: 'var(--hair)' }} /> : null}
+          {item.key === 'components' ? (
+            <div className="my-2 h-px" style={{ background: 'var(--hair)' }} />
+          ) : null}
           <NavButton item={item} active={view === item.key} onClick={() => onChange(item.key)} />
         </div>
       ))}

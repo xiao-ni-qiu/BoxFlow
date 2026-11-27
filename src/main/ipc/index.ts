@@ -2,6 +2,7 @@ import { ipcMain, dialog, shell, BrowserWindow, app } from 'electron'
 import { cpSync, existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { IPC } from '@shared/ipc'
+import { AI_PROVIDERS } from '@shared/ai'
 import { normalizeKind } from '@shared/constants'
 import { componentsService } from '../modules/components/service'
 import { suppliersService } from '../modules/suppliers/service'
@@ -12,6 +13,7 @@ import { backupDatabase, closeDatabase, databaseSize, getDataDir, initDatabase, 
 import { loadSettings, saveSettings } from '../settings'
 import { assertSettingsPatch, assertWebdavPatch } from './validate'
 import { mcpStatus, restartMcp } from '../mcp'
+import * as ai from '../modules/ai/service'
 import * as webdav from '../modules/backup/service'
 import { randomBytes } from 'node:crypto'
 import {
@@ -56,6 +58,10 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
     componentsService.restore(String(asObject(p).id))
     return true
   })
+  handle(IPC.componentsRemovalImpact, (p) =>
+    componentsService.removalImpact(String(asObject(p).id))
+  )
+  handle(IPC.componentsDelete, (p) => componentsService.remove(String(asObject(p).id)))
   handle(IPC.componentsFacets, (p) => {
     const { kind } = asObject(p) as { kind?: string }
     return componentsService.facets(kind ? normalizeKind(kind) : undefined)
@@ -104,6 +110,43 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
   handle(IPC.mcpRotateToken, async () => {
     saveSettings({ mcpToken: randomBytes(24).toString('hex') })
     return restartMcp()
+  })
+
+  handle(IPC.aiConfig, () => ai.aiService.config())
+  handle(IPC.aiSaveConfig, (p) => ai.aiService.saveConfig(asObject(p) as never))
+  handle(IPC.aiTest, () => ai.aiService.test())
+  handle(IPC.aiConversations, () => ai.aiService.conversations())
+  handle(IPC.aiLatest, () => ai.aiService.latestConversation())
+  handle(IPC.aiMessages, (p) => ai.aiService.messages(String(asObject(p).conversationId)))
+  handle(IPC.aiNewConversation, () => ai.aiService.newConversation())
+  handle(IPC.aiDeleteConversation, (p) =>
+    ai.aiService.deleteConversation(String(asObject(p).id))
+  )
+  handle(IPC.aiSend, (p) => ai.aiService.send(asObject(p) as never, getWindow()))
+  handle(IPC.aiAbort, () => ai.aiService.abort())
+  handle(IPC.aiConfirm, (p) =>
+    ai.aiService.resolveConfirm(String(asObject(p).callId), Boolean(asObject(p).approved))
+  )
+  handle(IPC.aiPickReport, async () => {
+    const win = getWindow()
+    const options = {
+      title: '选择物料报表',
+      properties: ['openFile' as const],
+      filters: [{ name: '表格', extensions: ['xlsx', 'xlsm', 'csv'] }]
+    }
+    const result = win
+      ? await dialog.showOpenDialog(win, options)
+      : await dialog.showOpenDialog(options)
+    if (result.canceled || !result.filePaths.length) return null
+    return ai.readReport(result.filePaths[0])
+  })
+  handle(IPC.aiOpenKeyUrl, async (p) => {
+    // 只允许跳转到预设里登记过的 Key 申请页面，避免变成任意链接打开器
+    const url = String(asObject(p).url ?? '')
+    const allowed = AI_PROVIDERS.some((provider) => provider.keyUrl && provider.keyUrl === url)
+    if (!allowed) throw new AppError('VALIDATION_FAILED', '不允许打开该地址')
+    await shell.openExternal(url)
+    return true
   })
 
   handle(IPC.settingsGet, () => loadSettings())

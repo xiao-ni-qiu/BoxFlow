@@ -11,9 +11,11 @@ import { MovementsPage } from './features/movements/MovementsPage'
 import { LocationsPage } from './features/locations/LocationsPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { AboutPage } from './features/about/AboutPage'
+import { AssistantPage } from './features/assistant/AssistantPage'
 
 const TITLES: Record<ViewKey, string> = {
   overview: '概览',
+  assistant: 'AI 助手',
   components: '电子元器件',
   boards: '开发板',
   modules: '电子模块',
@@ -82,6 +84,9 @@ export function App() {
           style={{ borderLeft: '1px solid var(--hair)' }}
         >
           {view === 'overview' ? <OverviewPage onNavigate={setView} /> : null}
+          {view === 'assistant' ? (
+            <AssistantPage onOpenSettings={() => setView('settings')} />
+          ) : null}
           {kind ? <ComponentsPage key={view} kind={kind} /> : null}
           {view === 'suppliers' ? <SuppliersPage /> : null}
           {view === 'movements' ? <MovementsPage /> : null}

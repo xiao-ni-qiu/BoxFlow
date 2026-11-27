@@ -12,6 +12,10 @@ export type ErrorCode =
   | 'INVALID_QUANTITY'
   | 'WEBDAV_NOT_CONFIGURED'
   | 'WEBDAV_FAILED'
+  | 'AI_NOT_CONFIGURED'
+  | 'AI_AUTH_FAILED'
+  | 'AI_BUSY'
+  | 'AI_FAILED'
   | 'DB_ERROR'
   | 'INTERNAL_ERROR'
 

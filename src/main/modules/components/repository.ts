@@ -260,6 +260,23 @@ export const componentsRepo = {
       .run(status, nowIso(), id)
   },
 
+  /** 彻底删除：先清掉从属记录，再删物料本身，返回被连带清理的条数 */
+  removeCascade(id: string): { movements: number; attachments: number } {
+    const db = getDb()
+    const movements = db.prepare('DELETE FROM stock_movements WHERE component_id = ?').run(id).changes
+    const attachments = db.prepare('DELETE FROM attachments WHERE component_id = ?').run(id).changes
+    db.prepare('DELETE FROM components WHERE id = ?').run(id)
+    return { movements, attachments }
+  },
+
+  /** 删除前告知用户会连带删掉多少条记录 */
+  cascadeCounts(id: string): { movements: number; attachments: number } {
+    const db = getDb()
+    const movements = (db.prepare('SELECT COUNT(*) AS n FROM stock_movements WHERE component_id = ?').get(id) as { n: number }).n
+    const attachments = (db.prepare('SELECT COUNT(*) AS n FROM attachments WHERE component_id = ?').get(id) as { n: number }).n
+    return { movements, attachments }
+  },
+
   facets(kind?: ItemKind): { manufacturers: string[]; categories: string[]; locations: string[] } {
     const db = getDb()
     const scope = kind ? ' AND kind = @kind' : ''

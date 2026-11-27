@@ -5,6 +5,8 @@ export const IPC = {
   componentsUpdate: 'components:update',
   componentsArchive: 'components:archive',
   componentsRestore: 'components:restore',
+  componentsRemovalImpact: 'components:removalImpact',
+  componentsDelete: 'components:delete',
   componentsFacets: 'components:facets',
   componentsMovements: 'components:movements',
 
@@ -27,6 +29,20 @@ export const IPC = {
   mcpStatus: 'mcp:status',
   mcpRestart: 'mcp:restart',
   mcpRotateToken: 'mcp:rotateToken',
+
+  aiConfig: 'ai:config',
+  aiSaveConfig: 'ai:saveConfig',
+  aiTest: 'ai:test',
+  aiConversations: 'ai:conversations',
+  aiLatest: 'ai:latest',
+  aiMessages: 'ai:messages',
+  aiNewConversation: 'ai:newConversation',
+  aiDeleteConversation: 'ai:deleteConversation',
+  aiSend: 'ai:send',
+  aiAbort: 'ai:abort',
+  aiConfirm: 'ai:confirm',
+  aiPickReport: 'ai:pickReport',
+  aiOpenKeyUrl: 'ai:openKeyUrl',
 
   transferExport: 'transfer:export',
   transferTemplate: 'transfer:template',
@@ -74,4 +90,6 @@ export type IpcResult<T> = IpcOk<T> | IpcFail
 export interface ApiBridge {
   invoke: <T = unknown>(channel: string, payload?: unknown) => Promise<IpcResult<T>>
   onMainMessage: (handler: (message: string) => void) => () => void
+  /** AI 助手的流式事件：token 增量、工具调用、确认请求等 */
+  onAiEvent: (handler: (event: unknown) => void) => () => void
 }

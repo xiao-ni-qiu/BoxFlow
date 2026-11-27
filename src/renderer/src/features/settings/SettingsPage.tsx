@@ -4,6 +4,7 @@ import { FolderOpen } from 'lucide-react'
 import { api, ApiError } from '@renderer/lib/api'
 import { Button, Field, Input, Modal, Switch, useToast } from '@renderer/components/ui'
 import { PageHeader } from '@renderer/features/overview/OverviewPage'
+import { AiPanel } from './AiPanel'
 import { McpPanel } from './McpPanel'
 import { WebdavPanel } from './WebdavPanel'
 
@@ -135,6 +136,13 @@ export function SettingsPage() {
           description="把数据库快照传到坚果云等 WebDAV 网盘，换电脑或误删时可一键恢复"
         >
           <WebdavPanel />
+        </Card>
+
+        <Card
+          title="AI 助手"
+          description="选一家模型服务商，填好 Key 就能在「AI 助手」页用对话管理库存"
+        >
+          <AiPanel />
         </Card>
 
         <Card title="窗口与启动" description="关闭窗口后程序会留在系统托盘，AI 仍可读写库存">

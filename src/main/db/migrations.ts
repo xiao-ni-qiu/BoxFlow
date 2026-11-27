@@ -120,5 +120,29 @@ CREATE INDEX IF NOT EXISTS ix_att_component ON attachments (component_id);
 ALTER TABLE components ADD COLUMN kind TEXT NOT NULL DEFAULT 'component';
 CREATE INDEX IF NOT EXISTS ix_components_kind ON components (kind, status);
 `
+  },
+  {
+    version: 3,
+    name: 'ai-assistant',
+    // 助手会话与消息，关掉软件再打开还能接着聊
+    sql: `
+CREATE TABLE IF NOT EXISTS ai_conversations (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ai_messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES ai_conversations (id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  content TEXT NOT NULL DEFAULT '',
+  tools TEXT,
+  attachments TEXT,
+  error TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_ai_msg_conv ON ai_messages (conversation_id, created_at);
+`
   }
 ]

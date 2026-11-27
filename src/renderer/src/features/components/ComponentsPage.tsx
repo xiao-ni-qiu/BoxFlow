@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
-import { Minus, Plus, Search } from 'lucide-react'
+import { Minus, Plus, Search, Trash2 } from 'lucide-react'
 import type { Component, SortKey } from '@shared/types'
 import { KIND_META, type ItemKind } from '@shared/constants'
-import { api } from '@renderer/lib/api'
+import { api, ApiError } from '@renderer/lib/api'
 import { useDebounced, useSearchFocus } from '@renderer/lib/hooks'
 import { dash, formatDateTime, formatNumber, isLowStock } from '@renderer/lib/format'
-import { Button, EmptyState, IconButton, Select } from '@renderer/components/ui'
+import { Button, EmptyState, IconButton, Modal, Select, useToast } from '@renderer/components/ui'
 import { PageHeader } from '@renderer/features/overview/OverviewPage'
 import { ExportMenu } from '@renderer/features/transfer/ExportMenu'
 import { ImportWizard } from '@renderer/features/transfer/ImportWizard'
@@ -43,6 +43,31 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
   const [stockTarget, setStockTarget] = useState<Component | null>(null)
   const [stockType, setStockType] = useState<'in' | 'out' | 'adjust'>('in')
   const [importOpen, setImportOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Component | null>(null)
+
+  const toast = useToast()
+  const queryClient = useQueryClient()
+
+  // 打开确认框时再问后端要影响面，避免列表里为了一个数字多查一遍
+  const impact = useQuery({
+    queryKey: ['removal-impact', deleteTarget?.id],
+    queryFn: () => api.components.removalImpact(deleteTarget!.id),
+    enabled: Boolean(deleteTarget)
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => api.components.remove(id),
+    onSuccess: (result) => {
+      const cleaned = result.movements > 0 ? `，连带清除 ${result.movements} 条流水` : ''
+      toast.push(`已删除 ${result.partNumber}${cleaned}`)
+      setDeleteTarget(null)
+      setSelected(null)
+      void queryClient.invalidateQueries({ queryKey: ['components'] })
+      void queryClient.invalidateQueries({ queryKey: ['overview'] })
+      void queryClient.invalidateQueries({ queryKey: ['facets'] })
+    },
+    onError: (err) => toast.push(err instanceof ApiError ? err.message : '删除失败', 'error')
+  })
 
   const { data: facets } = useQuery({
     queryKey: ['facets', kind],
@@ -215,7 +240,7 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
               <col style={{ width: 88 }} />
               <col style={{ width: 84 }} />
               <col style={{ width: 104 }} />
-              <col style={{ width: 84 }} />
+              <col style={{ width: 96 }} />
             </colgroup>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--hair-strong)' }}>
@@ -299,6 +324,16 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                             >
                               <Minus size={13} strokeWidth={2} />
                             </IconButton>
+                            <IconButton
+                              label={`删除 ${item.partNumber}`}
+                              className="hover:bg-danger-soft hover:text-danger"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                setDeleteTarget(item)
+                              }}
+                            >
+                              <Trash2 size={13} strokeWidth={1.8} />
+                            </IconButton>
                           </span>
                         </td>
                       </tr>
@@ -370,6 +405,10 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
           setEditing(selected)
           setFormOpen(true)
         }}
+        onDelete={() => {
+          if (!selected) return
+          setDeleteTarget(selected)
+        }}
       />
 
       <ComponentForm
@@ -398,6 +437,52 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
           setSelected(null)
         }}
       />
+
+      <Modal
+        open={Boolean(deleteTarget)}
+        onClose={() => {
+          if (!removeMutation.isPending) setDeleteTarget(null)
+        }}
+        title="确认永久删除？"
+        subtitle={
+          deleteTarget
+            ? `${deleteTarget.partNumber} · 现有 ${formatNumber(deleteTarget.quantity)} ${deleteTarget.unit}`
+            : undefined
+        }
+        width={440}
+        footer={
+          <>
+            <Button disabled={removeMutation.isPending} onClick={() => setDeleteTarget(null)}>
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              style={{ background: 'var(--danger)' }}
+              disabled={removeMutation.isPending}
+              onClick={() => {
+                if (deleteTarget) removeMutation.mutate(deleteTarget.id)
+              }}
+            >
+              {removeMutation.isPending ? '删除中…' : '永久删除'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-[12.5px] leading-relaxed text-t2">
+          <p>这条物料的档案会从库里消失，且无法撤销。同时会被清除：</p>
+          <ul className="space-y-1 rounded-ctl px-3 py-2.5 text-[12px]" style={{ background: 'var(--bg-sunken)' }}>
+            <li>
+              出入库流水 <span className="num text-t1">{impact.data ? impact.data.movements : '…'}</span> 条
+            </li>
+            <li>
+              附件 <span className="num text-t1">{impact.data ? impact.data.attachments : '…'}</span> 个
+            </li>
+          </ul>
+          <p className="text-t3">
+            只是暂时用不上的话，可以先把它导出留档；删除后如需再建，库存与流水都要重新录入。
+          </p>
+        </div>
+      </Modal>
     </div>
   )
 }
