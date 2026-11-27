@@ -180,12 +180,15 @@ export const componentsRepo = {
     return row ? mapComponent(row) : null
   },
 
-  findByPart(partNumber: string, manufacturer: string): Component | null {
-    const row = getDb()
-      .prepare(
-        `SELECT ${SELECT_FIELDS} ${FROM_JOIN} WHERE c.part_number = ? AND c.manufacturer = ? LIMIT 1`
-      )
-      .get(partNumber, manufacturer) as ComponentRow | undefined
+  findByPart(partNumber: string, manufacturer: string, pkg?: string | null): Component | null {
+    let sql = `SELECT ${SELECT_FIELDS} ${FROM_JOIN} WHERE c.part_number = ? AND c.manufacturer = ?`
+    const params: unknown[] = [partNumber, manufacturer]
+    if (pkg !== undefined) {
+      sql += ` AND ifnull(c.package, '') = ifnull(?, '')`
+      params.push(pkg)
+    }
+    sql += ' LIMIT 1'
+    const row = getDb().prepare(sql).get(...params) as ComponentRow | undefined
     return row ? mapComponent(row) : null
   },
 

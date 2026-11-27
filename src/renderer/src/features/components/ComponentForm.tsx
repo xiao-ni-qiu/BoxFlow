@@ -243,7 +243,7 @@ export function ComponentForm({
       subtitle={
         editing
           ? `${editing.partNumber} · 数量请通过出入库调整`
-          : `${meta.specLabel} + ${meta.makerLabel} 唯一，重复会被拦下`
+          : `${meta.specLabel} + ${meta.makerLabel} + ${meta.packageLabel} 唯一，重复会被拦下`
       }
       width={720}
       footer={

@@ -36,7 +36,7 @@ export const COMPONENT_COLUMNS: ColumnDef[] = [
     kind: 'text',
     width: 22,
     required: true,
-    hint: '与厂商组合唯一'
+    hint: '与厂商、封装组合唯一'
   },
   {
     key: 'manufacturer',

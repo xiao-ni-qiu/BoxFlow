@@ -78,11 +78,11 @@ export const componentsService = {
     const db = getDb()
 
     const run = db.transaction(() => {
-      const duplicate = componentsRepo.findByPart(input.partNumber, manufacturer)
+      const duplicate = componentsRepo.findByPart(input.partNumber, manufacturer, input.package ?? null)
       if (duplicate) {
         throw new AppError(
           'DUPLICATE_COMPONENT',
-          `型号 ${input.partNumber}（${manufacturer || '未填厂商'}）已存在`,
+          `型号 ${input.partNumber}（${manufacturer || '未填厂商'}）封装 ${input.package || '未填'} 已存在`,
           { id: duplicate.id }
         )
       }
@@ -172,10 +172,18 @@ export const componentsService = {
 
       const nextPart = (patch.partNumber as string | undefined) ?? existing.partNumber
       const nextMaker = (patch.manufacturer as string | undefined) ?? existing.manufacturer
-      if (nextPart !== existing.partNumber || nextMaker !== existing.manufacturer) {
-        const duplicate = componentsRepo.findByPart(nextPart, nextMaker)
+      const nextPkg = 'package' in patch ? (patch.package as string | null) : existing.package
+      if (
+        nextPart !== existing.partNumber ||
+        nextMaker !== existing.manufacturer ||
+        nextPkg !== existing.package
+      ) {
+        const duplicate = componentsRepo.findByPart(nextPart, nextMaker, nextPkg)
         if (duplicate && duplicate.id !== id) {
-          throw new AppError('DUPLICATE_COMPONENT', `型号 ${nextPart}（${nextMaker || '未填厂商'}）已存在`)
+          throw new AppError(
+            'DUPLICATE_COMPONENT',
+            `型号 ${nextPart}（${nextMaker || '未填厂商'}）封装 ${nextPkg || '未填'} 已存在`
+          )
         }
       }
 

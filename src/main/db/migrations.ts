@@ -151,5 +151,15 @@ CREATE INDEX IF NOT EXISTS ix_ai_msg_conv ON ai_messages (conversation_id, creat
     // 照片只存外链：数据全在本地的前提下，不把二进制塞进 SQLite。
     // 与早期预留的 image_path（本地附件路径）分开，互不干扰。
     sql: `ALTER TABLE components ADD COLUMN image_url TEXT;`
+  },
+  {
+    version: 5,
+    name: 'component-unique-with-package',
+    // 唯一性从 (part_number, manufacturer) 放宽为 (part_number, manufacturer, package)：
+    // 同一厂家同一型号但封装不同（如 0402 / 0603）的物料允许并存。
+    sql: `
+DROP INDEX IF EXISTS ux_components_part;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_components_part ON components (part_number, manufacturer, ifnull(package, ''));
+`
   }
 ]

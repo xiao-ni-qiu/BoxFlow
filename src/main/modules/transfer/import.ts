@@ -213,7 +213,8 @@ export function buildPreview(input: BuildPreviewInput): ImportPreview {
       if (entity === 'components') {
         const part = String(values.partNumber ?? '').trim()
         const maker = String(values.manufacturer ?? '').trim()
-        const existing = componentsRepo.findByPart(part, maker)
+        const pkg = String(values.package ?? '').trim() || null
+        const existing = componentsRepo.findByPart(part, maker, pkg)
         if (existing) {
           existingId = existing.id
           existingLabel = `${existing.partNumber}（现有 ${existing.quantity} ${existing.unit}）`
