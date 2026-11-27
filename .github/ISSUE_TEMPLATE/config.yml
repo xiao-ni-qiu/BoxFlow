@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 下载最新版本
+    url: https://github.com/xiao-ni-qiu/BoxFlow/releases
+    about: 安装包、更新日志都在 Releases 里
+  - name: 安全问题私下报告
+    url: https://github.com/xiao-ni-qiu/BoxFlow/security/advisories/new
+    about: 漏洞不要公开提交，请走私密报告渠道
+  - name: MCP 接入说明
+    url: https://github.com/xiao-ni-qiu/BoxFlow#用-ai-管理库存mcp
+    about: 配置 AI 客户端前先看这段

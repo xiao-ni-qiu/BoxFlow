@@ -1,0 +1,66 @@
+appId: com.pcxx.boxflow
+productName: BoxFlow
+copyright: Copyright © 2026
+
+directories:
+  output: dist
+  buildResources: build
+
+# 只把构建产物和必要清单打进 asar，源码与开发依赖不随包发布
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+
+# stdio 桥与托盘图标要能被外部进程/主进程按真实路径访问，不能放进 asar
+extraResources:
+  - from: resources/bin
+    to: bin
+    filter:
+      - '**/*'
+  - from: resources/icon.png
+    to: icon.png
+  - from: resources/tray.png
+    to: tray.png
+
+asar: true
+# better-sqlite3 是原生模块，必须解包才能在运行时加载
+asarUnpack:
+  - node_modules/better-sqlite3/**/*
+  - node_modules/bindings/**/*
+  - node_modules/file-uri-to-path/**/*
+
+# Electron 30+ 会校验 exe 内嵌的 asar 完整性；校验值对不上时进程会静默退出、连 main 都不执行。
+# 这里显式关掉，代价是失去防篡改校验，本地单机软件可以接受。
+electronFuses:
+  enableEmbeddedAsarIntegrityValidation: false
+  onlyLoadAppFromAsar: false
+  enableNodeOptionsEnvironmentVariable: false
+  runAsNode: false
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-x64.${ext}
+  # 关掉不必要的调试开关，正式包体积更小
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: BoxFlow
+  uninstallDisplayName: BoxFlow
+  installerLanguages:
+    - zh_CN
+  language: '2052'
+  # 卸载时保留用户数据，避免误删库存
+  deleteAppDataOnUninstall: false
+
+# 不生成自动更新所需的元数据
+publish: null

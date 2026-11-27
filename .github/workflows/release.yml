@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 构建 Windows 安装包
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 准备 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      - name: 打包安装程序
+        run: npm run dist
+
+      - name: 生成校验和
+        run: |
+          $file = Get-ChildItem dist -Filter 'BoxFlow-*-x64.exe' | Select-Object -First 1
+          $hash = (Get-FileHash $file.FullName -Algorithm SHA256).Hash
+          "$hash  $($file.Name)" | Out-File -FilePath dist/SHA256SUMS.txt -Encoding ascii
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: boxflow-windows-x64
+          path: |
+            dist/BoxFlow-*-x64.exe
+            dist/BoxFlow-*-x64.exe.blockmap
+            dist/SHA256SUMS.txt
+          retention-days: 7
+
+      - name: 发布 Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BoxFlow ${{ github.ref_name }}
+          draft: true
+          generate_release_notes: true
+          files: |
+            dist/BoxFlow-*-x64.exe
+            dist/BoxFlow-*-x64.exe.blockmap
+            dist/SHA256SUMS.txt
