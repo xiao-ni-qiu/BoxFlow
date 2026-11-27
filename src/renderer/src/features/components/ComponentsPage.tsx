@@ -307,12 +307,12 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                           </span>
                         </td>
                         <td className={clsx(TD, 'text-t2')}>{dash(item.locationFullCode)}</td>
-                        <td className="relative py-0">
+                        <td className="relative px-2 text-center">
                           <span className="text-[11.5px] text-t3 transition-opacity duration-fast group-hover:opacity-0">
                             {formatDateTime(item.updatedAt).slice(5, 10)}
                           </span>
                           <span
-                            className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
+                            className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
                             style={{ background: 'var(--bg-surface)', borderColor: 'var(--hair)' }}
                           >
                             <IconButton

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --font-ui: 'MiSans', -apple-system, 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI',
-    'PingFang SC', system-ui, sans-serif;
+  --font-ui: 'MiSans VF', 'MiSans', -apple-system, 'Segoe UI Variable Text', 'Segoe UI',
+    'Microsoft YaHei UI', 'PingFang SC', system-ui, sans-serif;
   --bg-app: #fafaf9;
   --bg-panel: #fafaf9;
   --bg-surface: #ffffff;

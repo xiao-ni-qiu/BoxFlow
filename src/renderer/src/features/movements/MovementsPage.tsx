@@ -8,8 +8,8 @@ import { Button, EmptyState, Select } from '@renderer/components/ui'
 import { PageHeader } from '@renderer/features/overview/OverviewPage'
 import { ExportMenu } from '@renderer/features/transfer/ExportMenu'
 
-const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface px-2 py-2 text-left text-[12px] font-normal text-t3'
-const TD = 'whitespace-nowrap px-2'
+const TH = 'sticky top-0 z-[2] whitespace-nowrap bg-surface px-2 py-2.5 text-center text-[11px] font-normal tracking-[0.02em] text-t3'
+const TD = 'whitespace-nowrap px-2 text-center'
 
 function sourceLabel(operator: string): string {
   if (operator === 'local') return '界面'
@@ -71,7 +71,7 @@ export function MovementsPage() {
       </div>
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col px-7">
-        <div className="min-h-0 flex-1 overflow-auto">
+        <div className="min-h-0 flex-1 overflow-auto rounded-card border border-hair bg-surface shadow-[0_1px_2px_rgba(20,20,19,0.04)]">
           <table className="w-full table-fixed border-collapse">
             <colgroup>
               <col style={{ width: 148 }} />
@@ -84,13 +84,13 @@ export function MovementsPage() {
             </colgroup>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--hair-strong)' }}>
-                <th className={TH}>时间</th>
-                <th className={TH}>类型</th>
-                <th className={TH}>型号</th>
+                <th className={clsx(TH, 'text-center')}>时间</th>
+                <th className={clsx(TH, 'text-center')}>类型</th>
+                <th className={clsx(TH, 'text-center')}>型号</th>
                 <th className={clsx(TH, 'text-right')}>变动</th>
                 <th className={clsx(TH, 'text-right')}>结存</th>
-                <th className={TH}>来源</th>
-                <th className={TH}>备注</th>
+                <th className={clsx(TH, 'text-center')}>来源</th>
+                <th className={clsx(TH, 'text-center')}>备注</th>
               </tr>
             </thead>
             <tbody>

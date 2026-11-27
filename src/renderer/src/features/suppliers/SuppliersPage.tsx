@@ -175,7 +175,7 @@ export function SuppliersPage() {
       </div>
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col px-7">
-        <div className="min-h-0 flex-1 overflow-auto">
+        <div className="min-h-0 flex-1 overflow-auto rounded-card border border-hair bg-surface shadow-[0_1px_2px_rgba(20,20,19,0.04)]">
           <table className="w-full table-fixed border-collapse">
             <colgroup>
               <col />

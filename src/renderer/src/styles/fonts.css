@@ -1,5 +1,6 @@
-/* MiSans（小米开源字体）子集化分片，来自 npm 包 misans（https://github.com/dsrkafuu/misans）
+/* MiSans（小米开源字体）可变字体，来自 npm 包 misans（https://github.com/dsrkafuu/misans）
    授权：MiSans 由小米免费商用授权，需在软件中注明使用；脚本按 Apache-2.0 分发。
+   可变字体 MiSans VF 的 font-weight 覆盖 150–700，界面里的细/常规/中粗/半粗/粗体
+   都能命中真实字重，不再由浏览器合成加粗（合成加粗会让中文小字发糊）。
    每个 @font-face 按 unicode-range 拆分，浏览器仅按需加载命中的分片。 */
-@import '../assets/fonts/MiSans-Regular.min.css';
-@import '../assets/fonts/MiSans-Semibold.min.css';
+@import '../assets/fonts/MiSansVF.min.css';
