@@ -16,6 +16,13 @@ const api: ApiBridge = {
     return () => {
       ipcRenderer.removeListener('ai:event', listener)
     }
+  },
+  onWindowState: (handler: (state: { maximized: boolean }) => void) => {
+    const listener = (_event: unknown, state: { maximized: boolean }): void => handler(state)
+    ipcRenderer.on('window:state', listener)
+    return () => {
+      ipcRenderer.removeListener('window:state', listener)
+    }
   }
 }
 

@@ -22,10 +22,21 @@ export function createMainWindow(hidden = false): BrowserWindow {
     }
   })
 
+  const pushState = (): void => {
+    if (!win.isDestroyed()) {
+      win.webContents.send('window:state', { maximized: win.isMaximized() })
+    }
+  }
+
+  win.on('maximize', pushState)
+  win.on('unmaximize', pushState)
+
   win.once('ready-to-show', () => {
     if (!hidden) {
       win.show()
     }
+    // 初始状态也推一次，避免渲染端默认值与实际窗口状态不一致
+    pushState()
   })
 
   win.webContents.setWindowOpenHandler(({ url }) => {

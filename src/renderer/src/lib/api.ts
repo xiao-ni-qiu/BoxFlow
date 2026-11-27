@@ -274,6 +274,8 @@ export const api = {
   window: {
     minimize: () => call<boolean>(IPC.windowMinimize),
     maximize: () => call<boolean>(IPC.windowMaximize),
-    close: () => call<boolean>(IPC.windowClose)
+    close: () => call<boolean>(IPC.windowClose),
+    onStateChange: (handler: (state: { maximized: boolean }) => void) =>
+      window.api.onWindowState(handler)
   }
 }

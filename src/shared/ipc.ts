@@ -88,9 +88,15 @@ export interface IpcFail {
 
 export type IpcResult<T> = IpcOk<T> | IpcFail
 
+export interface WindowState {
+  maximized: boolean
+}
+
 export interface ApiBridge {
   invoke: <T = unknown>(channel: string, payload?: unknown) => Promise<IpcResult<T>>
   onMainMessage: (handler: (message: string) => void) => () => void
   /** AI 助手的流式事件：token 增量、工具调用、确认请求等 */
   onAiEvent: (handler: (event: unknown) => void) => () => void
+  /** 窗口最大化/还原状态变化（含双击标题栏、拖拽吸附等非按钮触发的场景） */
+  onWindowState: (handler: (state: WindowState) => void) => () => void
 }

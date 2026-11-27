@@ -256,7 +256,7 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
             <tbody>
               {isLoading
                 ? Array.from({ length: 8 }).map((_, index) => (
-                    <tr key={index} style={{ height: 52, borderBottom: '1px solid var(--hair)' }}>
+                    <tr key={index} style={{ height: 44, borderBottom: '1px solid var(--hair)' }}>
                       {Array.from({ length: 7 }).map((__, cell) => (
                         <td key={cell} className="pr-3">
                           {cell === 0 || cell === 1 || cell === 3 || cell === 5 ? (
@@ -275,7 +275,7 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                         onClick={() => setSelected(item)}
                         className="group cursor-pointer transition-colors duration-fast hover:bg-app"
                         style={{
-                          height: 52,
+                          height: 44,
                           borderBottom: '1px solid var(--hair)',
                           background: active ? 'var(--accent-soft)' : undefined
                         }}
@@ -305,9 +305,13 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                           <span className="text-[11.5px] text-t3 transition-opacity duration-fast group-hover:opacity-0">
                             {formatDateTime(item.updatedAt).slice(5, 10)}
                           </span>
-                          <span className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity duration-fast group-hover:opacity-100">
+                          <span
+                            className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-ctl p-0.5 opacity-0 transition-opacity duration-fast group-hover:opacity-100"
+                            style={{ background: 'var(--bg-surface)' }}
+                          >
                             <IconButton
                               label="入库"
+                              className="!h-6 !w-6"
                               onClick={(event) => {
                                 event.stopPropagation()
                                 openStock(item, 'in')
@@ -317,6 +321,7 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                             </IconButton>
                             <IconButton
                               label="出库"
+                              className="!h-6 !w-6"
                               onClick={(event) => {
                                 event.stopPropagation()
                                 openStock(item, 'out')
@@ -324,9 +329,13 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                             >
                               <Minus size={13} strokeWidth={2} />
                             </IconButton>
+                            <span
+                              className="mx-0.5 block h-3.5"
+                              style={{ width: 1, background: 'var(--hair-strong)' }}
+                            />
                             <IconButton
                               label={`删除 ${item.partNumber}`}
-                              className="hover:bg-danger-soft hover:text-danger"
+                              className="!h-6 !w-6 hover:bg-danger-soft hover:text-danger"
                               onClick={(event) => {
                                 event.stopPropagation()
                                 setDeleteTarget(item)
