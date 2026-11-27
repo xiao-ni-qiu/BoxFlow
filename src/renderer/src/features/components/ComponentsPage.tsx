@@ -241,17 +241,17 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
               <col style={{ width: 92 }} />
               <col style={{ width: 88 }} />
               <col style={{ width: 108 }} />
-              <col style={{ width: 96 }} />
+              <col style={{ width: 120 }} />
             </colgroup>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--hair-strong)' }}>
                 <th className={clsx(TH, 'text-center')}>{meta.specLabel}</th>
                 <th className={clsx(TH, 'text-center')}>{meta.makerLabel}</th>
-                <th className={TH}>分类</th>
-                <th className={TH}>{meta.packageLabel}</th>
-                <th className={clsx(TH, 'pr-3 text-right')}>库存</th>
-                <th className={TH}>位置</th>
-                <th className={clsx(TH, 'pr-4 text-right')}>更新</th>
+                <th className={clsx(TH, 'text-center')}>分类</th>
+                <th className={clsx(TH, 'text-center')}>{meta.packageLabel}</th>
+                <th className={clsx(TH, 'text-center')}>库存</th>
+                <th className={clsx(TH, 'text-center')}>位置</th>
+                <th className={clsx(TH, 'text-center')}>更新</th>
               </tr>
             </thead>
             <tbody>
@@ -259,13 +259,10 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                 ? Array.from({ length: 8 }).map((_, index) => (
                     <tr key={index} style={{ height: 48, borderBottom: '1px solid var(--hair)' }}>
                       {Array.from({ length: 7 }).map((__, cell) => (
-                        <td key={cell} className={clsx('pr-3', cell === 0 && 'text-center')}>
+                        <td key={cell} className={clsx('pr-3 text-center')}>
                           {cell === 0 || cell === 1 || cell === 3 || cell === 5 ? (
                             <span
-                              className={clsx(
-                                'block h-2.5 w-3/4 rounded bg-sunken',
-                                cell === 0 && 'mx-auto'
-                              )}
+                              className={clsx('block h-2.5 w-3/4 rounded bg-sunken', 'mx-auto')}
                             />
                           ) : null}
                         </td>
@@ -293,12 +290,12 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                         <td className={clsx(TD, 'text-center text-[12.5px] text-t2')}>
                           <span className="block truncate">{dash(item.manufacturer)}</span>
                         </td>
-                        <td className={clsx(TD, 'text-[12.5px] text-t2')}>
+                        <td className={clsx(TD, 'text-center text-[12.5px] text-t2')}>
                           <span className="block truncate">{dash(item.category)}</span>
                         </td>
-                        <td className={clsx(TD, 'mono text-t2')}>{dash(item.package)}</td>
+                        <td className={clsx(TD, 'mono text-center text-t2')}>{dash(item.package)}</td>
                         <td
-                          className={clsx(TD, 'num text-right text-[13px]')}
+                          className={clsx(TD, 'num text-center text-[13px]')}
                           style={{ color: low ? 'var(--warn)' : 'var(--text-1)' }}
                         >
                           {low ? (
@@ -309,13 +306,13 @@ export function ComponentsPage({ kind }: { kind: ItemKind }) {
                           ) : null}
                           {formatNumber(item.quantity)}
                         </td>
-                        <td className={clsx(TD, 'mono text-t2')}>{dash(item.locationFullCode)}</td>
-                        <td className="relative py-0 pl-0 pr-4 text-right">
+                        <td className={clsx(TD, 'text-center text-t2')}>{dash(item.locationFullCode)}</td>
+                        <td className="relative py-0 pl-0 pr-0 text-center">
                           <span className="text-[11.5px] text-t3 transition-opacity duration-fast group-hover:opacity-0">
                             {formatDateTime(item.updatedAt).slice(5, 10)}
                           </span>
                           <span
-                            className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
+                            className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border p-[3px] opacity-0 shadow-[0_4px_14px_-6px_rgba(20,20,19,0.28)] transition-opacity duration-fast group-hover:opacity-100"
                             style={{ background: 'var(--bg-surface)', borderColor: 'var(--hair)' }}
                           >
                             <IconButton

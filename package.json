@@ -1,6 +1,6 @@
 {
   "name": "boxflow",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "BoxFlow - 本地库存管理，电子元器件 / 开发板 / 模块 / 五金 / 耗材",
   "main": "out/main/index.js",
   "author": "xiao-ni-qiu (https://github.com/xiao-ni-qiu)",
