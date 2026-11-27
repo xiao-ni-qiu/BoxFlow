@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Pencil, Trash2, X } from 'lucide-react'
 import type { Component } from '@shared/types'
@@ -5,6 +6,7 @@ import { KIND_META, MOVEMENT_LABELS } from '@shared/constants'
 import { api } from '@renderer/lib/api'
 import { dash, formatDateTime, formatNumber, formatPrice, isLowStock } from '@renderer/lib/format'
 import { Button, Drawer, IconButton } from '@renderer/components/ui'
+import { ComponentImage, ImageLightbox } from './ComponentImage'
 
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
@@ -28,6 +30,7 @@ export function ComponentDrawer({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const [preview, setPreview] = useState(false)
   const { data: movements } = useQuery({
     queryKey: ['component-movements', component?.id],
     queryFn: () => api.components.movements(component!.id, 20),
@@ -51,10 +54,24 @@ export function ComponentDrawer({
             {dash(component.manufacturer)} · {dash(component.category)}
           </p>
         </div>
-        <IconButton label="关闭" className="ml-auto" onClick={onClose}>
-          <X size={15} strokeWidth={1.6} />
-        </IconButton>
+        <div className="ml-auto flex shrink-0 items-start gap-2">
+          <ComponentImage
+            url={component.imageUrl}
+            alt={component.partNumber}
+            className="h-16 w-16"
+            onOpen={() => setPreview(true)}
+          />
+          <IconButton label="关闭" onClick={onClose}>
+            <X size={15} strokeWidth={1.6} />
+          </IconButton>
+        </div>
       </div>
+
+      <ImageLightbox
+        url={preview ? component.imageUrl : null}
+        alt={component.partNumber}
+        onClose={() => setPreview(false)}
+      />
 
       <div className="px-5">
         <div className="flex items-end gap-3">

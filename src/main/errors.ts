@@ -1,3 +1,5 @@
+import { ZodError } from 'zod'
+
 export type ErrorCode =
   | 'VALIDATION_FAILED'
   | 'DUPLICATE_COMPONENT'
@@ -15,6 +17,7 @@ export type ErrorCode =
   | 'AI_NOT_CONFIGURED'
   | 'AI_AUTH_FAILED'
   | 'AI_BUSY'
+  | 'AI_NO_MODEL_LIST'
   | 'AI_FAILED'
   | 'DB_ERROR'
   | 'INTERNAL_ERROR'
@@ -34,6 +37,15 @@ export class AppError extends Error {
 export function serializeError(err: unknown): { code: string; message: string; details?: unknown } {
   if (err instanceof AppError) {
     return { code: err.code, message: err.message, details: err.details }
+  }
+  // 校验错误默认的 message 是一整串 JSON，界面里没法看，取第一条的说明
+  if (err instanceof ZodError) {
+    const first = err.issues[0]
+    return {
+      code: 'VALIDATION_FAILED',
+      message: first?.message ?? '输入不合法',
+      details: err.issues
+    }
   }
   if (err instanceof Error) {
     return { code: 'INTERNAL_ERROR', message: err.message }

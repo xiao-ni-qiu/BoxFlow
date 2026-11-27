@@ -59,6 +59,7 @@ function briefComponent(c: Component) {
     safetyStock: c.safetyStock,
     location: c.locationFullCode,
     supplier: c.supplierName,
+    imageUrl: c.imageUrl,
     unitPrice: c.unitPrice,
     lowStock: c.quantity <= c.safetyStock,
     status: c.status
@@ -192,7 +193,8 @@ export const TOOLS: ToolDefinition[] = [
         package: str('封装，例如 LQFP-48（选填）'),
         description: str('物料描述（选填）'),
         supplierName: str('供应商名称（选填）'),
-        note: str('备注（选填）')
+        note: str('备注（选填）'),
+        imageUrl: str('商品照片外链，需以 http(s) 开头（选填）')
       },
       required: ['partNumber', 'quantity']
     },
@@ -420,7 +422,8 @@ export const TOOLS: ToolDefinition[] = [
         unitPrice: num('新单价（选填）'),
         packaging: str('包装形式（选填）', { enum: PACKAGINGS }),
         tags: str('标签，逗号分隔（选填）'),
-        note: str('备注（选填）')
+        note: str('备注（选填）'),
+        imageUrl: str('商品照片外链，需以 http(s) 开头（选填）')
       }
     },
     annotations: { readOnlyHint: false, destructiveHint: false }
@@ -474,7 +477,8 @@ const handlerMap: Record<string, Handler> = {
         unitPrice: args.unitPrice === undefined ? null : Number(args.unitPrice),
         locationCode: args.locationCode ? String(args.locationCode) : null,
         supplierId: supplier?.id ?? null,
-        note: args.note ? String(args.note) : null
+        note: args.note ? String(args.note) : null,
+        imageUrl: args.imageUrl ? String(args.imageUrl) : null
       })
       created = true
     }
@@ -809,7 +813,8 @@ const handlerMap: Record<string, Handler> = {
       'unitPrice',
       'packaging',
       'tags',
-      'note'
+      'note',
+      'imageUrl'
     ]
     for (const key of passthrough) {
       if (args[key] !== undefined && args[key] !== null) patch[key] = args[key]

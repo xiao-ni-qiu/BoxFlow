@@ -298,6 +298,7 @@ function importComponentRow(
 
   const supplier = supplierName ? suppliersRepo.findByName(supplierName) : null
   const locationCode = String(v.locationCode ?? '').trim()
+  const rawPhoto = String(v.imageUrl ?? '').trim()
 
   const payload = {
     kind: normalizeKind(v.kind),
@@ -317,7 +318,9 @@ function importComponentRow(
     locationCode: locationCode || null,
     supplierId: supplier?.id ?? null,
     tags: (v.tags as string) || null,
-    note: (v.note as string) || null
+    note: (v.note as string) || null,
+    // 相对路径、网盘链接之类的写错不该让整行导入失败，只丢这一列
+    imageUrl: /^https?:\/\/\S+$/i.test(rawPhoto) ? rawPhoto : null
   }
 
   if (!row.existingId) {

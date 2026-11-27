@@ -22,7 +22,10 @@ export interface Component {
   locationFullCode: string | null
   supplierId: string | null
   supplierName: string | null
+  /** 本地附件路径，预留给后台上传的图片 */
   imagePath: string | null
+  /** 商品照片外链，填了才在界面上显示缩略图 */
+  imageUrl: string | null
   tags: string | null
   note: string | null
   status: string

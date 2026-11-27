@@ -1,4 +1,4 @@
-import type { AiProtocol } from '@shared/ai'
+import type { AiModelInfo, AiProtocol } from '@shared/ai'
 import { AppError } from '../../errors'
 
 /**
@@ -429,8 +429,7 @@ export async function streamChat(options: StreamOptions): Promise<TurnResult> {
   }
 }
 
-/** 设置页的「测试连接」：不流式，只要通就行 */
-export async function testConnection(options: {
+/** 设置页的「测试连接」：不流式，只要通就行 */export async function testConnection(options: {
   protocol: AiProtocol
   baseUrl: string
   apiKey: string
@@ -494,6 +493,135 @@ export async function testConnection(options: {
       latencyMs: Date.now() - started,
       sample: (data.choices?.[0]?.message?.content ?? '').slice(0, 80)
     }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/* ---------------------------- 可用模型列表 ---------------------------- */
+
+/**
+ * 这些多半不是对话模型，读回来一股脑塞进下拉框反而难找。
+ * 过滤只影响菜单展示，不影响手填——用户想用哪个仍然可以直接输入。
+ */
+const NON_CHAT_MODEL =
+  /(embed|embedding|whisper|tts|dall-e|moderation|rerank|stable-diffusion|sdxl|flux|image|audio|realtime|transcribe|ocr|bge-|m3e)/i
+
+function readModelRow(row: unknown): AiModelInfo | null {
+  if (typeof row === 'string') return { id: row }
+  if (!row || typeof row !== 'object') return null
+  const record = row as Record<string, unknown>
+  const id =
+    typeof record.id === 'string'
+      ? record.id
+      : typeof record.name === 'string'
+        ? record.name
+        : typeof record.model === 'string'
+          ? record.model
+          : ''
+  if (!id) return null
+
+  const display =
+    typeof record.display_name === 'string'
+      ? record.display_name
+      : typeof record.displayName === 'string'
+        ? record.displayName
+        : ''
+  const context =
+    typeof record.context_length === 'number'
+      ? record.context_length
+      : typeof record.context_window === 'number'
+        ? record.context_window
+        : typeof record.max_context_length === 'number'
+          ? record.max_context_length
+          : null
+
+  return {
+    id,
+    label: display && display !== id ? display : undefined,
+    hint: context && context > 0 ? `${Math.round(context / 1000)}K 上下文` : undefined
+  }
+}
+
+/**
+ * 按当前 Key 读取服务商开放的模型清单。
+ *
+ * - OpenAI 兼容（含 DeepSeek / Kimi / 通义 / 智谱 / 硅基流动 / Gemini 兼容层 /
+ *   OpenRouter / Ollama / LM Studio）：GET {base}/models，返回 { data: [{ id }] }
+ * - Anthropic：GET {base}/models，需要 x-api-key 与 anthropic-version
+ *
+ * 没开放这个接口的服务商返回 404/405，这里抛 AI_NO_MODEL_LIST，由界面提示手填。
+ */
+export async function listModels(options: {
+  protocol: AiProtocol
+  baseUrl: string
+  apiKey: string
+}): Promise<AiModelInfo[]> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 15000)
+
+  try {
+    const headers: Record<string, string> = { Accept: 'application/json' }
+    let path = '/models'
+    if (options.protocol === 'anthropic') {
+      headers['x-api-key'] = options.apiKey
+      headers['anthropic-version'] = ANTHROPIC_VERSION
+      path = '/models?limit=200'
+    } else if (options.apiKey) {
+      headers.Authorization = `Bearer ${options.apiKey}`
+    }
+
+    const response = await fetch(endpoint(options.baseUrl, path), {
+      headers,
+      signal: controller.signal
+    })
+
+    if (!response.ok) {
+      if (response.status === 404 || response.status === 405 || response.status === 501) {
+        throw new AppError(
+          'AI_NO_MODEL_LIST',
+          '这家服务商没有开放模型列表接口，请直接填写模型名（可参考下方常用项）'
+        )
+      }
+      throw explainHttpError(response.status, await response.text(), '模型服务')
+    }
+
+    const payload = (await response.json()) as {
+      data?: unknown[]
+      models?: unknown[]
+    }
+    const raw = Array.isArray(payload.data)
+      ? payload.data
+      : Array.isArray(payload.models)
+        ? payload.models
+        : []
+
+    const rows = raw.map(readModelRow).filter((item): item is AiModelInfo => Boolean(item))
+    const chatRows = rows.filter((item) => !NON_CHAT_MODEL.test(item.id))
+
+    // 本地部署可能只装了 embedding 或图像模型，别让菜单空着
+    const picked = chatRows.length ? chatRows : rows
+    const seen = new Set<string>()
+    return picked
+      .filter((item) => {
+        if (seen.has(item.id)) return false
+        seen.add(item.id)
+        return true
+      })
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .slice(0, 400)
+  } catch (err) {
+    if (err instanceof AppError) throw err
+    if (err instanceof Error) {
+      if (err.name === 'AbortError') {
+        throw new AppError('AI_FAILED', '读取模型列表超时，请检查网络或 Base URL')
+      }
+      if (/fetch failed|ENOTFOUND|ECONNREFUSED|ETIMEDOUT|network/i.test(err.message)) {
+        throw new AppError('AI_FAILED', `连不上模型服务，无法读取模型列表（${err.message}）`)
+      }
+      throw new AppError('AI_FAILED', err.message)
+    }
+    throw new AppError('AI_FAILED', '读取模型列表失败')
   } finally {
     clearTimeout(timer)
   }

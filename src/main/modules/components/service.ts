@@ -29,7 +29,8 @@ const UPDATABLE_COLUMNS: Record<string, string> = {
   moq: 'moq',
   msl: 'msl',
   tags: 'tags',
-  note: 'note'
+  note: 'note',
+  imageUrl: 'image_url'
 }
 
 function normalizeManufacturer(value: string | undefined | null): string {
@@ -112,7 +113,8 @@ export const componentsService = {
         locationFullCode,
         supplierId: input.supplierId ?? null,
         tags: input.tags ?? null,
-        note: input.note ?? null
+        note: input.note ?? null,
+        imageUrl: input.imageUrl ?? null
       })
 
       if (initialQty > 0) {

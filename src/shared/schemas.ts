@@ -22,6 +22,18 @@ const nonNegativeInt = z
   .optional()
   .nullable()
 
+/** 照片外链：只收 http(s)，避免 data:/file:/javascript: 之类混进来 */
+const imageUrlField = z
+  .string()
+  .trim()
+  .max(600, '链接过长')
+  .optional()
+  .nullable()
+  .transform((value) => (value ? value : null))
+  .refine((value) => value === null || /^https?:\/\/[^\s]+$/i.test(value), {
+    message: '照片链接需以 http:// 或 https:// 开头'
+  })
+
 export const componentCreateSchema = z.object({
   kind: kindSchema.optional(),
   partNumber: z.string().trim().min(1, '型号不能为空').max(120, '型号过长'),
@@ -42,7 +54,8 @@ export const componentCreateSchema = z.object({
   locationCode: nullableTrimmed(60),
   supplierId: nullableTrimmed(40),
   tags: nullableTrimmed(200),
-  note: nullableTrimmed(1000)
+  note: nullableTrimmed(1000),
+  imageUrl: imageUrlField
 })
 
 export const componentUpdateSchema = componentCreateSchema.partial()

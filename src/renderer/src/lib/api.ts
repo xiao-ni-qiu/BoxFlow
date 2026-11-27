@@ -7,6 +7,8 @@ import type {
   AiConfigView,
   AiConversation,
   AiEvent,
+  AiModelListQuery,
+  AiModelListResult,
   AiSendPayload,
   AiTestResult,
   ParsedReport
@@ -213,6 +215,8 @@ export const api = {
     config: () => call<AiConfigView>(IPC.aiConfig),
     saveConfig: (patch: AiConfigPatch) => call<AiConfigView>(IPC.aiSaveConfig, patch),
     test: () => call<AiTestResult>(IPC.aiTest),
+    listModels: (query: AiModelListQuery = {}) =>
+      call<AiModelListResult>(IPC.aiListModels, query),
     conversations: () => call<AiConversation[]>(IPC.aiConversations),
     latest: () => call<AiConversation | null>(IPC.aiLatest),
     messages: (conversationId: string) =>

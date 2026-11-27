@@ -1,9 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ExternalLink, KeyRound, ShieldCheck, Sparkles } from 'lucide-react'
-import { AI_PROVIDERS, findProvider } from '@shared/ai'
+import { ExternalLink, KeyRound, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react'
+import { AI_PROVIDERS, findProvider, type AiModelInfo } from '@shared/ai'
 import { api, ApiError } from '@renderer/lib/api'
-import { Button, Field, Input, Select, Switch, Textarea, useToast } from '@renderer/components/ui'
+import {
+  Button,
+  Combobox,
+  Field,
+  Input,
+  Select,
+  Switch,
+  useToast,
+  type ComboboxOption
+} from '@renderer/components/ui'
 
 interface Draft {
   providerId: string
@@ -33,6 +42,11 @@ export function AiPanel() {
   const [draft, setDraft] = useState<Draft>(EMPTY)
   const [touched, setTouched] = useState(false)
 
+  // 服务商实时返回的模型清单，换了模型或上新模型都不用改代码
+  const [models, setModels] = useState<AiModelInfo[]>([])
+  const [modelNote, setModelNote] = useState<{ error?: string; latency?: number }>({})
+  const autoLoaded = useRef(false)
+
   useEffect(() => {
     if (!config || touched) return
     setDraft({
@@ -48,6 +62,41 @@ export function AiPanel() {
 
   const preset = findProvider(draft.providerId)
 
+  /**
+   * 读取模型清单。优先用界面上刚填的值，这样「填完 Key 先看看有哪些模型」
+   * 不用先保存一次；Key 只在主进程里用于这一次请求。
+   */
+  const loadModels = useMutation({
+    mutationFn: (input: { providerId?: string; baseUrl?: string; apiKey?: string }) =>
+      api.ai.listModels(input),
+    onSuccess: (result) => {
+      setModels(result.models)
+      setModelNote({ latency: result.latencyMs })
+    },
+    onError: (err) => {
+      // 刷新失败时保留上一次读到的列表，别让用户手里的选项突然消失
+      setModelNote({ error: err instanceof ApiError ? err.message : '读取模型列表失败' })
+    }
+  })
+
+  const reloadModels = (source: Draft = draft): void => {
+    setModelNote({})
+    loadModels.mutate({
+      providerId: source.providerId,
+      baseUrl: source.baseUrl,
+      apiKey: source.apiKey || undefined
+    })
+  }
+
+  // 打开设置页时用已存的 Key 自动读一次，省掉一次点击
+  useEffect(() => {
+    if (autoLoaded.current || !config) return
+    if (!config.hasApiKey || config.providerId !== draft.providerId) return
+    autoLoaded.current = true
+    reloadModels()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, draft.providerId])
+
   const set = (patch: Partial<Draft>): void => {
     setTouched(true)
     setDraft((prev) => ({ ...prev, ...patch }))
@@ -56,6 +105,8 @@ export function AiPanel() {
   const changeProvider = (providerId: string): void => {
     const next = findProvider(providerId)
     setTouched(true)
+    setModels([])
+    setModelNote({})
     setDraft((prev) => ({
       ...prev,
       providerId,
@@ -68,8 +119,11 @@ export function AiPanel() {
     mutationFn: (patch: Record<string, unknown>) => api.ai.saveConfig(patch),
     onSuccess: (next) => {
       void queryClient.invalidateQueries({ queryKey: ['ai-config'] })
+      const justSavedKey = draft.apiKey
       setDraft((prev) => ({ ...prev, apiKey: '' }))
       setTouched(false)
+      // 保存后顺手刷新一次模型清单，顺便验证 Key 能否读到列表
+      reloadModels({ ...draft, apiKey: justSavedKey } as Draft)
       if (next.ready) {
         // 保存后顺手验证一次，省得用户再点
         test.mutate()
@@ -111,7 +165,16 @@ export function AiPanel() {
     save.mutate(patch)
   }
 
-  const suggestions = preset.models.filter((model) => model !== draft.model)
+  const modelOptions: ComboboxOption[] = models.map((item) => ({
+    value: item.id,
+    label: item.label ? `${item.id} · ${item.label}` : item.id,
+    hint: item.hint
+  }))
+  // 远端清单已经拿到时就不必再摆预设 chips，避免混淆
+  const suggestions = (models.length ? [] : preset.models).filter((model) => model !== draft.model)
+  const canReadModels =
+    Boolean(draft.baseUrl.trim()) &&
+    (Boolean(draft.apiKey) || Boolean(config?.hasApiKey) || Boolean(preset.local))
 
   return (
     <div>
@@ -129,36 +192,67 @@ export function AiPanel() {
           <Field
             label="模型"
             hint={
-              suggestions.length
-                ? '可以直接输入，界面里也有常用项'
-                : '填服务商文档里的模型标识'
+              models.length
+                ? '列表由服务商实时返回，可搜索，也可直接输入'
+                : '填服务商文档里的模型标识，或点下方读取'
             }
           >
-            <Input
+            <Combobox
               value={draft.model}
-              onChange={(e) => set({ model: e.target.value })}
+              onChange={(next) => set({ model: next })}
+              options={modelOptions}
+              allowCreate
+              createHint="使用这个模型名"
+              emptyText="没有匹配项，可直接输入模型名"
               placeholder={preset.models[0] ?? 'model-name'}
-              spellCheck={false}
-              className="mono"
             />
           </Field>
         </div>
 
-        {suggestions.length ? (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-t3">常用</span>
-            {suggestions.map((model) => (
-              <button
-                key={model}
-                type="button"
-                onClick={() => set({ model })}
-                className="rounded-full px-2 py-0.5 text-[11px] text-t2 transition-colors duration-fast hover:bg-sunken hover:text-t1"
-                style={{ border: '1px solid var(--hair)' }}
-              >
-                {model}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {suggestions.length ? (
+            <>
+              <span className="text-[11px] text-t3">预设常用</span>
+              {suggestions.map((model) => (
+                <button
+                  key={model}
+                  type="button"
+                  onClick={() => set({ model })}
+                  className="rounded-full px-2 py-0.5 text-[11px] text-t2 transition-colors duration-fast hover:bg-sunken hover:text-t1"
+                  style={{ border: '1px solid var(--hair)' }}
+                >
+                  {model}
+                </button>
+              ))}
+            </>
+          ) : (
+            <span className="text-[11.5px] text-t3">
+              {models.length
+                ? `已读取 ${models.length} 个可用模型${modelNote.latency ? ` · ${modelNote.latency} ms` : ''}`
+                : modelNote.error
+                  ? '未能读取列表'
+                  : '还没有读取模型清单'}
+            </span>
+          )}
+          <Button
+            className="ml-auto h-7 px-2.5 text-[12px]"
+            disabled={loadModels.isPending || !canReadModels}
+            onClick={() => reloadModels()}
+            title={canReadModels ? '按当前 Key 读取服务商开放的模型' : '先填写接口地址与 API Key'}
+          >
+            <RefreshCw
+              size={12}
+              strokeWidth={1.8}
+              className={loadModels.isPending ? 'animate-spin' : undefined}
+            />
+            {loadModels.isPending ? '读取中…' : models.length ? '刷新模型' : '读取可用模型'}
+          </Button>
+        </div>
+
+        {modelNote.error ? (
+          <p className="-mt-1 text-[11.5px] leading-relaxed text-warn">
+            {modelNote.error}
+          </p>
         ) : null}
 
         <Field label="接口地址" hint="OpenAI 兼容时结尾是 /v1，不要带 /chat/completions">
@@ -262,8 +356,8 @@ export function AiPanel() {
       </div>
 
       <p className="pt-2 text-[11.5px] leading-relaxed text-t3">
-        请求由本机直接发往服务商，BoxFlow 不做中转；只有你主动提问时才会联网。模型能力差异较大，建议先用
-        「测试连接」确认可用，再到 AI 助手页试一句「现在有哪些物料快没了」。
+        请求由本机直接发往服务商，BoxFlow 不做中转；只有你主动提问时才会联网。模型清单按当前 Key 实时读取，
+        服务商上新或下线模型都不用升级软件；个别网关没开放该接口时，直接手填模型名即可。
       </p>
     </div>
   )

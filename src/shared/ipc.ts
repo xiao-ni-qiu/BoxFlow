@@ -33,6 +33,7 @@ export const IPC = {
   aiConfig: 'ai:config',
   aiSaveConfig: 'ai:saveConfig',
   aiTest: 'ai:test',
+  aiListModels: 'ai:listModels',
   aiConversations: 'ai:conversations',
   aiLatest: 'ai:latest',
   aiMessages: 'ai:messages',

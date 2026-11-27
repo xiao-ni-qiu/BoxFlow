@@ -8,6 +8,8 @@ import {
   type AiConfigView,
   type AiConversation,
   type AiEvent,
+  type AiModelListQuery,
+  type AiModelListResult,
   type AiSendPayload,
   type AiTestResult,
   type AiToolTrace,
@@ -20,7 +22,13 @@ import { componentsService } from '../components/service'
 import { parseSheet } from '../transfer/import'
 import { loadConfig, readApiKey, rememberConversation, saveConfig, toView } from './store'
 import { conversationsRepo } from './conversations'
-import { streamChat, testConnection, type ChatMessage, type ChatToolCall } from './client'
+import {
+  streamChat,
+  listModels as fetchModels,
+  testConnection,
+  type ChatMessage,
+  type ChatToolCall
+} from './client'
 import {
   assistantToolSchemas,
   executeAssistantTool,
@@ -429,8 +437,7 @@ export const aiService = {
     return saveConfig(patch)
   },
 
-  async test(): Promise<AiTestResult> {
-    const { config, apiKey } = assertReady()
+  async test(): Promise<AiTestResult> {    const { config, apiKey } = assertReady()
     const preset = findProvider(config.providerId)
     const result = await testConnection({
       protocol: preset.protocol,
@@ -444,6 +451,37 @@ export const aiService = {
       latencyMs: result.latencyMs,
       model: config.model,
       sample: result.sample
+    }
+  },
+
+  /**
+   * 读取服务商当前开放的模型清单。
+   * 允许传入界面上刚填、尚未保存的 Base URL 与 Key，这样「填完 Key 先看看有哪些模型」
+   * 不必先落盘一次；Key 只在本次请求里用，不写文件、不回传。
+   */
+  async listModels(query: AiModelListQuery = {}): Promise<AiModelListResult> {
+    const config = loadConfig()
+    const preset = findProvider(query.providerId || config.providerId)
+    const baseUrl = (query.baseUrl ?? config.baseUrl).trim().replace(/\/+$/, '')
+    const apiKey = (query.apiKey ?? '').trim() || readApiKey()
+
+    if (!baseUrl) {
+      throw new AppError('AI_NOT_CONFIGURED', '请先填写接口地址')
+    }
+    if (!apiKey && !preset.local) {
+      throw new AppError('AI_NOT_CONFIGURED', '请先填写 API Key，再读取可用模型')
+    }
+
+    const started = Date.now()
+    const models = await fetchModels({
+      protocol: preset.protocol,
+      baseUrl,
+      apiKey
+    })
+
+    return {
+      models,
+      latencyMs: Date.now() - started
     }
   },
 

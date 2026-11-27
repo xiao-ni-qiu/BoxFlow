@@ -144,5 +144,12 @@ CREATE TABLE IF NOT EXISTS ai_messages (
 );
 CREATE INDEX IF NOT EXISTS ix_ai_msg_conv ON ai_messages (conversation_id, created_at);
 `
+  },
+  {
+    version: 4,
+    name: 'component-image-url',
+    // 照片只存外链：数据全在本地的前提下，不把二进制塞进 SQLite。
+    // 与早期预留的 image_path（本地附件路径）分开，互不干扰。
+    sql: `ALTER TABLE components ADD COLUMN image_url TEXT;`
   }
 ]

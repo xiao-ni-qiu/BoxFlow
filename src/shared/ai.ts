@@ -18,6 +18,10 @@ export interface AiProviderPreset {
   label: string
   protocol: AiProtocol
   baseUrl: string
+  /**
+   * 仅作占位与离线兜底：真正的可用列表由 GET /models 按当前 Key 实时读取，
+   * 这样服务商上下架模型（例如 deepseek-chat 换代）时不必改代码。
+   */
   models: string[]
   /** 申请 API Key 的页面 */
   keyUrl?: string
@@ -179,6 +183,29 @@ export interface AiTestResult {
   model: string
   /** 模型返回的示例文本，用来确认链路通 */
   sample?: string
+}
+
+/* ------------------------------ 可用模型 ------------------------------ */
+
+export interface AiModelInfo {
+  /** 请求时填进 model 字段的标识 */
+  id: string
+  /** 服务商给的可读名称，例如 Claude 的 display_name */
+  label?: string
+  /** 上下文长度之类的补充信息 */
+  hint?: string
+}
+
+export interface AiModelListQuery {
+  providerId?: string
+  baseUrl?: string
+  /** 界面上刚填、还没保存的 Key；为空时用已保存的那份 */
+  apiKey?: string
+}
+
+export interface AiModelListResult {
+  models: AiModelInfo[]
+  latencyMs: number
 }
 
 /* ------------------------------ 对话数据 ------------------------------ */

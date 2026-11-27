@@ -15,6 +15,8 @@ import {
   type ComboboxOption
 } from '@renderer/components/ui'
 
+import { ComponentImage } from './ComponentImage'
+
 interface FormState {
   kind: ItemKind
   partNumber: string
@@ -35,6 +37,7 @@ interface FormState {
   supplierId: string
   tags: string
   note: string
+  imageUrl: string
 }
 
 function emptyState(kind: ItemKind): FormState {
@@ -57,7 +60,8 @@ function emptyState(kind: ItemKind): FormState {
     locationCode: '',
     supplierId: '',
     tags: '',
-    note: ''
+    note: '',
+    imageUrl: ''
   }
 }
 
@@ -81,7 +85,8 @@ function toState(component: Component): FormState {
     locationCode: component.locationFullCode ?? '',
     supplierId: component.supplierId ?? '',
     tags: component.tags ?? '',
-    note: component.note ?? ''
+    note: component.note ?? '',
+    imageUrl: component.imageUrl ?? ''
   }
 }
 
@@ -205,7 +210,8 @@ export function ComponentForm({
       locationCode: form.locationCode.trim() || null,
       supplierId: form.supplierId || null,
       tags: form.tags.trim() || null,
-      note: form.note.trim() || null
+      note: form.note.trim() || null,
+      imageUrl: form.imageUrl.trim() || null
     }
     if (!editing) {
       payload.quantity = Number(form.quantity || 0)
@@ -288,6 +294,26 @@ export function ComponentForm({
             onChange={(e) => set('description', e.target.value)}
             placeholder={meta.descriptionPlaceholder}
           />
+        </Field>
+        <Field
+          label="照片链接"
+          hint="填 http(s) 图片地址，点开详情时显示缩略图；留空就不显示"
+          className="col-span-2"
+        >
+          <div className="flex items-center gap-2.5">
+            <Input
+              value={form.imageUrl}
+              onChange={(e) => set('imageUrl', e.target.value)}
+              placeholder="https://example.com/stm32f103.jpg"
+              spellCheck={false}
+              className="mono min-w-0 flex-1"
+            />
+            <ComponentImage
+              url={form.imageUrl.trim() || null}
+              alt="照片预览"
+              className="h-8 w-8 shrink-0"
+            />
+          </div>
         </Field>
       </div>
 

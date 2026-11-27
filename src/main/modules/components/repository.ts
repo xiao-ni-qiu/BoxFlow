@@ -26,6 +26,7 @@ interface ComponentRow {
   supplier_id: string | null
   supplier_name: string | null
   image_path: string | null
+  image_url: string | null
   tags: string | null
   note: string | null
   status: string
@@ -37,7 +38,7 @@ const SELECT_FIELDS = `
   c.id, c.kind, c.part_number, c.manufacturer, c.category, c.package, c.description,
   c.date_code, c.packaging, c.quantity, c.unit, c.safety_stock, c.unit_price,
   c.currency, c.moq, c.msl, c.rohs, c.location_id, c.location_full_code,
-  c.supplier_id, s.name AS supplier_name, c.image_path, c.tags, c.note,
+  c.supplier_id, s.name AS supplier_name, c.image_path, c.image_url, c.tags, c.note,
   c.status, c.created_at, c.updated_at
 `
 
@@ -67,6 +68,7 @@ export function mapComponent(row: ComponentRow): Component {
     supplierId: row.supplier_id,
     supplierName: row.supplier_name,
     imagePath: row.image_path,
+    imageUrl: row.image_url,
     tags: row.tags,
     note: row.note,
     status: row.status,
@@ -209,6 +211,7 @@ export const componentsRepo = {
     supplierId: string | null
     tags: string | null
     note: string | null
+    imageUrl?: string | null
   }): string {
     const id = newId()
     const ts = nowIso()
@@ -217,14 +220,16 @@ export const componentsRepo = {
         `INSERT INTO components (
           id, kind, part_number, manufacturer, category, package, description, date_code, packaging,
           quantity, unit, safety_stock, unit_price, currency, moq, msl, rohs,
-          location_id, location_full_code, supplier_id, tags, note, status, created_at, updated_at
+          location_id, location_full_code, supplier_id, tags, note, image_url,
+          status, created_at, updated_at
         ) VALUES (
           @id, @kind, @partNumber, @manufacturer, @category, @package, @description, @dateCode, @packaging,
           @quantity, @unit, @safetyStock, @unitPrice, @currency, @moq, @msl, @rohs,
-          @locationId, @locationFullCode, @supplierId, @tags, @note, 'active', @ts, @ts
+          @locationId, @locationFullCode, @supplierId, @tags, @note, @imageUrl,
+          'active', @ts, @ts
         )`
       )
-      .run({ id, ...data, ts })
+      .run({ id, ...data, imageUrl: data.imageUrl ?? null, ts })
     return id
   },
 

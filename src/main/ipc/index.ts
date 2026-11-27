@@ -115,6 +115,7 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
   handle(IPC.aiConfig, () => ai.aiService.config())
   handle(IPC.aiSaveConfig, (p) => ai.aiService.saveConfig(asObject(p) as never))
   handle(IPC.aiTest, () => ai.aiService.test())
+  handle(IPC.aiListModels, (p) => ai.aiService.listModels(asObject(p) as never))
   handle(IPC.aiConversations, () => ai.aiService.conversations())
   handle(IPC.aiLatest, () => ai.aiService.latestConversation())
   handle(IPC.aiMessages, (p) => ai.aiService.messages(String(asObject(p).conversationId)))

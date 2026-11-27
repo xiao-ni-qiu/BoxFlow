@@ -158,6 +158,14 @@ export const COMPONENT_COLUMNS: ColumnDef[] = [
     aliases: ['note', 'notes', 'comment', 'comments', 'remarks'],
     kind: 'text',
     width: 24
+  },
+  {
+    key: 'imageUrl',
+    label: '照片链接',
+    aliases: ['imageurl', 'image', 'img', 'photo', 'picture', '图片', '照片', '图片链接'],
+    kind: 'text',
+    width: 30,
+    hint: 'http(s) 图片地址，留空则不显示缩略图'
   }
 ]
 
