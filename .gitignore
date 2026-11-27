@@ -35,14 +35,5 @@ docs/shots/
 Thumbs.db
 desktop.ini
 
-# 打包时若 dist 被占用，可临时输出到这里（见 CONTRIBUTING）
-dist-build/
-dist-final/
-dist-016/
-dist-017/
-dist-018/
-dist-019/
-dist-120/
-dist-121/
-dist-122/
-dist-123/
+# 打包时若 dist 被占用，可临时输出到 dist-<任意后缀>（见 CONTRIBUTING）
+dist-*/

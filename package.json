@@ -41,6 +41,7 @@
     "setup:native": "node scripts/setup-native.mjs",
     "icons": "electron scripts/make-icon.cjs",
     "test:mcp": "node scripts/test-mcp.mjs",
+    "verify:dist": "node scripts/verify-dist.mjs dist",
     "dist": "electron-vite build && electron-builder --win"
   },
   "dependencies": {

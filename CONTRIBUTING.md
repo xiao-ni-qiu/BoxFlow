@@ -94,6 +94,16 @@ npm run dist
 >
 > 构建依赖下载过一次后会进本机缓存，之后不再联网。
 
+> **输出目录要干净**：electron-builder 在解压 Electron 前会先清空目标 `win-unpacked`，若目录里有上次的残留、或被资源管理器 / 杀毒软件占用，会报 `EBUSY`、`Permission denied` 后中断。换个全新的输出目录即可：`npx electron-builder --win --config.directories.output=dist-$(date +%s)`（`dist-*` 已在 `.gitignore` 中）。
+
+打包完成后可以跑一次产物自检，确认 asar 内的版本号、渲染产物、原生模块解包与 MCP 桥文件都在：
+
+```bash
+npm run verify:dist
+```
+
+也可以直接用打包版验证启动：`dist/win-unpacked/BoxFlow.exe --screenshot` 会在临时目录留下截图并在退出前打印版本与数据目录。
+
 ## 文档与截图
 
 README 里的截图来自应用内置的截图模式：
