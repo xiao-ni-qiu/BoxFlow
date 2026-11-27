@@ -19,6 +19,8 @@ export const IPC = {
 
   locationsTree: 'locations:tree',
   locationsCreate: 'locations:create',
+  locationsUpdate: 'locations:update',
+  locationsDelete: 'locations:delete',
 
   stats: 'stats:overview',
 

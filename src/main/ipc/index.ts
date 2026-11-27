@@ -82,6 +82,8 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
 
   handle(IPC.locationsTree, () => locationsService.tree())
   handle(IPC.locationsCreate, (p) => locationsService.create(p))
+  handle(IPC.locationsUpdate, (p) => locationsService.update(p))
+  handle(IPC.locationsDelete, (p) => locationsService.remove(p))
 
   handle(IPC.stats, () => ({
     ...componentsService.stats(),

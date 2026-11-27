@@ -54,6 +54,7 @@ export interface Facets {
 
 export interface LocationNode extends StorageLocation {
   children: LocationNode[]
+  componentCount: number
 }
 
 export interface OverviewPayload extends InventoryStats {
@@ -164,7 +165,9 @@ export const api = {
   },
   locations: {
     tree: () => call<LocationNode[]>(IPC.locationsTree),
-    create: (input: Record<string, unknown>) => call<StorageLocation>(IPC.locationsCreate, input)
+    create: (input: Record<string, unknown>) => call<StorageLocation>(IPC.locationsCreate, input),
+    update: (input: Record<string, unknown>) => call<StorageLocation>(IPC.locationsUpdate, input),
+    remove: (id: string) => call<{ id: string }>(IPC.locationsDelete, { id })
   },
   stats: () => call<OverviewPayload>(IPC.stats),
   settings: {

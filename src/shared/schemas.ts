@@ -73,6 +73,15 @@ export const locationCreateSchema = z.object({
   note: nullableTrimmed(200)
 })
 
+export const locationUpdateSchema = z.object({
+  id: z.string().min(1),
+  code: z.string().trim().min(1, '位置编码不能为空').max(20),
+  name: nullableTrimmed(80).optional(),
+  kind: z.enum(['room', 'rack', 'layer', 'box']).optional(),
+  capacity: nonNegativeInt.optional(),
+  note: nullableTrimmed(200).optional()
+})
+
 export const movementCreateSchema = z.object({
   componentId: z.string().min(1),
   type: z.enum(['in', 'out', 'adjust']),
@@ -90,4 +99,5 @@ export type ComponentUpdateInput = z.infer<typeof componentUpdateSchema>
 export type SupplierCreateInput = z.infer<typeof supplierCreateSchema>
 export type SupplierUpdateInput = z.infer<typeof supplierUpdateSchema>
 export type LocationCreateInput = z.infer<typeof locationCreateSchema>
+export type LocationUpdateInput = z.infer<typeof locationUpdateSchema>
 export type MovementCreateInput = z.infer<typeof movementCreateSchema>

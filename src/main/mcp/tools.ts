@@ -368,7 +368,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: 'list_locations',
     title: '库位列表',
-    description: '列出全部库位编码及其层级结构，可用于确认物料该放哪里。',
+    description: '列出全部库位编码、名称、类型与备注，可用于确认物料该放哪里。',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
@@ -730,7 +730,12 @@ const handlerMap: Record<string, Handler> = {
     return textResult({
       count: flat.length,
       items: flat
-        .map((l) => ({ code: l.fullCode, name: l.name, kind: l.kind }))
+        .map((l) => ({
+          code: l.fullCode,
+          name: l.name,
+          kind: l.kind,
+          note: l.note ?? undefined
+        }))
         .sort((a, b) => a.code.localeCompare(b.code))
     })
   },
