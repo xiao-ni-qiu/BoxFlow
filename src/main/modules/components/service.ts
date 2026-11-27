@@ -28,6 +28,10 @@ const UPDATABLE_COLUMNS: Record<string, string> = {
   currency: 'currency',
   moq: 'moq',
   msl: 'msl',
+  rohs: 'rohs',
+  locationId: 'location_id',
+  locationFullCode: 'location_full_code',
+  supplierId: 'supplier_id',
   tags: 'tags',
   note: 'note',
   imageUrl: 'image_url'

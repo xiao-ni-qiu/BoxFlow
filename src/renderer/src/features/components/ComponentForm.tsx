@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { KIND_META, KIND_OPTIONS, type ItemKind } from '@shared/constants'
-import type { Component } from '@shared/types'
+import type { Component, Page } from '@shared/types'
 import { api, ApiError, type LocationNode } from '@renderer/lib/api'
 import {
   Button,
@@ -173,9 +173,23 @@ export function ComponentForm({
       if (editing) return api.components.update(editing.id, payload)
       return api.components.create(payload)
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // 乐观更新：用服务端返回的最新数据立即刷新列表缓存对应项，避免等待重新拉取
+      queryClient.setQueriesData<Page<Component>>({ queryKey: ['components'] }, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          items: old.items.map((item) => (item.id === result.id ? result : item))
+        }
+      })
+      // 编辑场景同步更新详情缓存
+      if (editing) {
+        queryClient.setQueryData(['component-detail', editing.id], result)
+      }
+      // 再 invalidate 触发完整拉取，保证分页/总数等最终一致
       void queryClient.invalidateQueries({ queryKey: ['components'] })
       void queryClient.invalidateQueries({ queryKey: ['overview'] })
+      void queryClient.invalidateQueries({ queryKey: ['facets'] })
       toast.push(editing ? '已保存修改' : '已新增物料')
       onClose()
     },

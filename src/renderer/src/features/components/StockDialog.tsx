@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
-import type { Component } from '@shared/types'
+import type { Component, Page } from '@shared/types'
 import { api, ApiError } from '@renderer/lib/api'
 import { formatNumber } from '@renderer/lib/format'
 import { Button, Field, Input, Modal, Select, Textarea, useToast } from '@renderer/components/ui'
@@ -56,6 +56,21 @@ export function StockDialog({
   const mutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => api.movements.create(payload),
     onSuccess: (result) => {
+      // 乐观更新：用最新库存立即刷新列表缓存对应项，避免等待重新拉取
+      queryClient.setQueriesData<Page<Component>>({ queryKey: ['components'] }, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          items: old.items.map((item) =>
+            item.id === component.id ? { ...item, quantity: result.quantity } : item
+          )
+        }
+      })
+      // 同步更新详情缓存
+      queryClient.setQueryData(['component-detail', component.id], (old: Component | undefined) =>
+        old ? { ...old, quantity: result.quantity } : old
+      )
+      // 再 invalidate 触发完整拉取，保证流水/概览等最终一致
       void queryClient.invalidateQueries({ queryKey: ['components'] })
       void queryClient.invalidateQueries({ queryKey: ['component-detail'] })
       void queryClient.invalidateQueries({ queryKey: ['movements'] })
