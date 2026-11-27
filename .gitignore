@@ -37,3 +37,6 @@ desktop.ini
 
 # 打包时若 dist 被占用，可临时输出到 dist-<任意后缀>（见 CONTRIBUTING）
 dist-*/
+
+# 本地工具缓存与工作区数据
+.workbuddy/
